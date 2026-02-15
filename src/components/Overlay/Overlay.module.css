@@ -1,0 +1,68 @@
+.overlay {
+    max-width: 300px;
+    position: fixed;
+    gap: 25px;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+
+    .menu {
+        display: flex;
+        width: 300px;
+        gap: 10px;
+
+        .label {
+            background-color: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+
+            padding: 5px 10px;
+            border-radius: 20px;
+
+            font: var(--md-sys-text-headline-small);
+            box-shadow: var(--md-sys-elevation);
+        }
+
+        .start {
+            background-color: var(--md-sys-color-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50px;
+
+            flex-grow: 1;
+
+            box-shadow: var(--md-sys-elevation);
+
+            cursor: pointer;
+        }
+
+        .stop {
+            background-color: var(--md-sys-color-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50px;
+
+            flex-grow: 1;
+
+            box-shadow: var(--md-sys-elevation);
+
+            cursor: pointer;
+
+            opacity: 80%;
+        }
+    }
+
+    .blocks {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+
+        box-shadow: var(--md-sys-elevation);
+
+        background-color: var(--md-sys-color-surface-container);
+        border-radius: 20px;
+
+    }
+}
