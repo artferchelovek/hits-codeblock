@@ -1,0 +1,41 @@
+.block {
+    padding: 8px;
+    background: var(--md-sys-color-secondary-container);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    .label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .labelP {
+        color: var(--md-sys-color-on-secondary-container);
+        font: var(--md-sys-text-title-medium)
+    }
+
+    input {
+        padding: 5px 10px;
+        font: var(--md-sys-text-body-medium);
+        border-radius: 10px;
+        border: none;
+        flex-grow: 1;
+    }
+
+    .content {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .assigmentInput {
+        width: 70px;
+    }
+
+    .conditionInput {
+        width: 70px;
+    }
+}

@@ -1,9 +1,10 @@
 import "./App.module.css";
+import Overlay from "../../components/Overlay/Overlay.tsx";
 
 export default function App() {
   return (
     <>
-      <h1>Init repo + test</h1>
+      <Overlay />
     </>
   );
 }
