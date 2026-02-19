@@ -1,4 +1,5 @@
 .block {
+    width: 300px;
     padding: 8px;
     background: var(--md-sys-color-secondary-container);
     border-radius: 15px;

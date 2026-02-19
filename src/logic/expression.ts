@@ -1,6 +1,6 @@
 import type { ExpressionNode } from "../types/ast.ts";
 
-function stringToExpression(expression: string): ExpressionNode {
+export function stringToExpression(expression: string): ExpressionNode {
   let current = expression.replace(/\s+/g, "");
 
   const regNumber = /^-?\d+$/;
@@ -76,7 +76,7 @@ function stringToExpression(expression: string): ExpressionNode {
 
     return {
       type: "BinaryExpression",
-      operator: operator as "+" | "-" | "*" | "/",
+      operator: operator as "+" | "-" | "*" | "/" | "%",
       left: stringToExpression(left),
       right: stringToExpression(right),
     };
@@ -142,7 +142,3 @@ export function renderExpression(expr: ExpressionNode): string {
     }
   }
 }
-
-console.log(JSON.stringify(stringToExpression("1*a+(a*123-b/d)"), null, 2));
-
-console.log(renderExpression(stringToExpression("1*a/(a*123-b/d)")));

@@ -1,14 +1,20 @@
-import { DndContext } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/core";
+import { useBlockContext } from "../../context/BlockContext";
 import styles from "./EditorSpace.module.css";
+import RenderNode from "../../logic/RenderNode";
 
 export default function EditorSpace() {
-  const dragEnd = (event: unknown) => {
-    console.log(event);
-  };
+  const { program } = useBlockContext();
+
+  const { setNodeRef } = useDroppable({
+    id: "root",
+  });
 
   return (
-    <DndContext onDragEnd={dragEnd}>
-      <div className={styles.test}></div>
-    </DndContext>
+    <div ref={setNodeRef} className={styles.editor}>
+      {program.body.map((node) => (
+        <RenderNode key={node.id} node={node} />
+      ))}
+    </div>
   );
 }

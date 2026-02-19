@@ -14,6 +14,8 @@ export interface VariableDeclarationNode {
   id: string;
   type: "VariableDeclaration";
   name: string;
+  x: number;
+  y: number;
   // value: ExpressionNode | null;
 }
 
@@ -22,6 +24,8 @@ export interface AssignmentNode {
   type: "Assignment";
   target: string; // ima peremennoi
   value: ExpressionNode;
+  x: number;
+  y: number;
 }
 
 export interface ForNode {
@@ -31,6 +35,8 @@ export interface ForNode {
   from: ExpressionNode;
   to: ExpressionNode;
   body: StatementNode[];
+  x: number;
+  y: number;
 }
 
 export interface IfNode {
@@ -38,12 +44,16 @@ export interface IfNode {
   type: "If";
   condition: ExpressionNode;
   body: StatementNode[];
+  x: number;
+  y: number;
 }
 
 export interface PrintNode {
   id: string;
   type: "Print";
   expression: ExpressionNode;
+  x: number;
+  y: number;
 }
 
 export type ExpressionNode =
@@ -63,7 +73,7 @@ export interface IdentifierNode {
 
 export interface BinaryExpressionNode {
   type: "BinaryExpression";
-  operator: "+" | "-" | "*" | "/" | ">" | "<" | ">=" | "<=" | "==";
+  operator: "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==";
   left: ExpressionNode;
   right: ExpressionNode;
 }

@@ -30,6 +30,7 @@ export const BlockContextProvider = ({
   });
 
   const addStatement = (parentId: string | null, node: StatementNode) => {
+    console.log("addStatement", parentId, node);
     setProgram((prev) => {
       if (!parentId) {
         return { ...prev, body: [...prev.body, node] };
