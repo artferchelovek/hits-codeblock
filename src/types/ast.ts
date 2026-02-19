@@ -14,7 +14,7 @@ export interface VariableDeclarationNode {
   id: string;
   type: "VariableDeclaration";
   name: string;
-  value: ExpressionNode | null;
+  // value: ExpressionNode | null;
 }
 
 export interface AssignmentNode {
