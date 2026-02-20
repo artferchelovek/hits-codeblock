@@ -10,16 +10,9 @@ type Props = {
     type: string;
   };
   children: ReactNode;
-  inputs?: number;
-  outputs?: number;
 };
 
-export default function BaseBlockLayout({
-  node,
-  children,
-  inputs = 1,
-  outputs = 1,
-}: Props) {
+export default function BaseBlockLayout({ node, children }: Props) {
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
     data: { type: "node" },
@@ -53,9 +46,7 @@ export default function BaseBlockLayout({
           : undefined,
       }}
     >
-      {inputs > 0 && (
-        <div ref={setInputRef} className={styles.inputConnector} />
-      )}
+      <div ref={setInputRef} className={styles.inputConnector} />
 
       <div className={styles.label}>
         <p className={styles.labelP}>{node.type}</p>
@@ -64,14 +55,12 @@ export default function BaseBlockLayout({
 
       <div className={styles.content}>{children}</div>
 
-      {outputs > 0 && (
-        <div
-          ref={setOutRef}
-          {...outListeners}
-          {...outAttr}
-          className={styles.outputConnector}
-        />
-      )}
+      <div
+        ref={setOutRef}
+        {...outListeners}
+        {...outAttr}
+        className={styles.outputConnector}
+      />
     </div>
   );
 }

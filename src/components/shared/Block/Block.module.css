@@ -29,20 +29,15 @@ input {
     border-radius: 10px;
     border: none;
     flex-grow: 1;
+    min-width: 0;
 }
 
 .content {
+    width: 100%;
+    max-width: 100%;
     display: flex;
     gap: 10px;
     align-items: center;
-}
-
-.assigmentInput {
-    width: 70px;
-}
-
-.conditionInput {
-    width: 70px;
 }
 
 .inputConnector {
@@ -55,6 +50,11 @@ input {
     border-radius: 50%;
 }
 
+.inputConnector:hover {
+    transform: scale(120%);
+    transition: 150ms;
+}
+
 .outputConnector {
     position: absolute;
     bottom: 4px;
@@ -64,4 +64,9 @@ input {
     background: var(--md-sys-color-error);
     border-radius: 50%;
     cursor: grab;
+}
+
+.outputConnector:hover {
+    transform: scale(120%);
+    transition: 150ms;
 }

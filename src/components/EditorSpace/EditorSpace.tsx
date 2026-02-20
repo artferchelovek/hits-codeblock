@@ -17,12 +17,15 @@ export default function EditorSpace() {
   const { program, updateStatement } = useBlockContext();
 
   const [activeConnection, setActiveConnection] = useState<ActiveLine>(null);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
 
   const { setNodeRef } = useDroppable({
     id: "root",
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastMouse = useRef({ x: 0, y: 0 });
 
   function connectNodes(sourceId: string, targetId: string) {
     updateStatement(sourceId, (node) => ({
@@ -81,32 +84,77 @@ export default function EditorSpace() {
     }
   };
 
+  function handleMouseDown(e: React.MouseEvent) {
+    if (e.button !== 1) return;
+
+    e.preventDefault();
+    setIsPanning(true);
+    lastMouse.current = { x: e.clientX, y: e.clientY };
+  }
+
+  function handleMouseMove(e: React.MouseEvent) {
+    if (!isPanning) return;
+
+    const dx = e.clientX - lastMouse.current.x;
+    const dy = e.clientY - lastMouse.current.y;
+
+    setPan((prev) => ({
+      x: prev.x + dx,
+      y: prev.y + dy,
+    }));
+
+    lastMouse.current = { x: e.clientX, y: e.clientY };
+  }
+
+  function handleMouseUp() {
+    setIsPanning(false);
+  }
+
   return (
     <DndContext
       onDragEnd={dragEnd}
       onDragMove={dragMove}
       onDragCancel={() => setActiveConnection(null)}
     >
-      <div ref={containerRef}>
-        <svg className={styles.connections}>
-          {activeConnection && <ActiveLine connection={activeConnection} />}
+      <div
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        style={{
+          width: "100vw",
+          height: "100vh",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            transform: `translate(${pan.x}px, ${pan.y}px)`,
+            width: "100%",
+            height: "100%",
+          }}
+        >
+          <svg className={styles.connections}>
+            {activeConnection && <ActiveLine connection={activeConnection} />}
 
-          {program.body.map((node) => {
-            if (!node.nextId) return null;
+            {program.body.map((node) => {
+              if (!node.nextId) return null;
 
-            const target = program.body.find((n) => n.id === node.nextId);
-            if (!target) return null;
+              const target = program.body.find((n) => n.id === node.nextId);
+              if (!target) return null;
 
-            console.log(node);
+              return <ConnectionLine key={node.id} from={node} to={target} />;
+            })}
+          </svg>
 
-            return <ConnectionLine key={node.id} from={node} to={target} />;
-          })}
-        </svg>
-
-        <div ref={setNodeRef} className={styles.editor}>
-          {program.body.map((node) => (
-            <RenderNode key={node.id} node={node} />
-          ))}
+          <div ref={setNodeRef} className={styles.editor}>
+            {program.body.map((node) => (
+              <RenderNode key={node.id} node={node} />
+            ))}
+          </div>
         </div>
       </div>
     </DndContext>
