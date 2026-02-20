@@ -6,9 +6,14 @@ import {
   stringToExpression,
 } from "../../../logic/expression.ts";
 import { useEffect, useState } from "react";
+import { useDraggable } from "@dnd-kit/core";
 
 export default function Print({ node }: { node: PrintNode }) {
   const { updateStatement } = useBlockContext();
+
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: node.id,
+  });
 
   const [inputValue, setInputValue] = useState(
     renderExpression(node.expression),
@@ -19,9 +24,22 @@ export default function Print({ node }: { node: PrintNode }) {
   }, [node.expression]);
 
   return (
-    <div className={styles.block}>
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      className={styles.block}
+      style={{
+        position: "absolute",
+        left: node.x,
+        top: node.y,
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+      }}
+    >
       <div className={styles.label}>
         <p className={styles.labelP}>{node.type}</p>
+        <p {...listeners}>☰</p>
       </div>
       <div className={styles.content}>
         <input

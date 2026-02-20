@@ -3,6 +3,13 @@ export interface ProgramNode {
   body: StatementNode[];
 }
 
+export interface BaseNodeAttributes {
+  id: string;
+  x: number;
+  y: number;
+  nextId: string | null;
+}
+
 export type StatementNode =
   | VariableDeclarationNode
   | AssignmentNode
@@ -10,50 +17,34 @@ export type StatementNode =
   | IfNode
   | PrintNode;
 
-export interface VariableDeclarationNode {
-  id: string;
+export interface VariableDeclarationNode extends BaseNodeAttributes {
   type: "VariableDeclaration";
   name: string;
-  x: number;
-  y: number;
-  // value: ExpressionNode | null;
 }
 
-export interface AssignmentNode {
-  id: string;
+export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
   target: string; // ima peremennoi
   value: ExpressionNode;
-  x: number;
-  y: number;
 }
 
-export interface ForNode {
-  id: string;
+export interface ForNode extends BaseNodeAttributes {
   type: "For";
   iterator: string;
   from: ExpressionNode;
   to: ExpressionNode;
   body: StatementNode[];
-  x: number;
-  y: number;
 }
 
-export interface IfNode {
-  id: string;
+export interface IfNode extends BaseNodeAttributes {
   type: "If";
   condition: ExpressionNode;
   body: StatementNode[];
-  x: number;
-  y: number;
 }
 
-export interface PrintNode {
-  id: string;
+export interface PrintNode extends BaseNodeAttributes {
   type: "Print";
   expression: ExpressionNode;
-  x: number;
-  y: number;
 }
 
 export type ExpressionNode =

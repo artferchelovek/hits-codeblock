@@ -13,6 +13,7 @@ export function createNode(type: string): StatementNode {
         name: "",
         x: 100,
         y: 100,
+        nextId: null,
       };
 
     case "Assignment":
@@ -26,6 +27,7 @@ export function createNode(type: string): StatementNode {
         },
         x: 100,
         y: 100,
+        nextId: null,
       };
 
     case "Print":
@@ -38,6 +40,7 @@ export function createNode(type: string): StatementNode {
         },
         x: 100,
         y: 100,
+        nextId: null,
       };
 
     default:

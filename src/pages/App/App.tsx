@@ -9,7 +9,7 @@ export default function App() {
   const { addStatement } = useBlockContext();
 
   const dragEnd = (event: any) => {
-    const { active, over } = event;
+    const { active, over, delta } = event;
 
     if (!over) return;
 
@@ -19,6 +19,8 @@ export default function App() {
       if (!type) return;
 
       const newNode = createNode(type);
+      newNode.x = newNode.x + delta.x;
+      newNode.y = newNode.y + delta.y;
       addStatement(null, newNode);
     }
   };

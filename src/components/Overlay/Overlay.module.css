@@ -1,4 +1,5 @@
 .overlay {
+    z-index: 100;
     max-width: 300px;
     position: fixed;
     gap: 25px;
