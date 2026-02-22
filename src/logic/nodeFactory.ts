@@ -43,6 +43,29 @@ export function createNode(type: string): StatementNode {
         nextId: null,
       };
 
+    case "If":
+      return {
+        id: generateId(),
+        type: "If",
+        condition: {
+          type: "BinaryExpression",
+          operator: "<=",
+          left: {
+            type: "Identifier",
+            name: "a",
+          },
+          right: {
+            type: "Identifier",
+            name: "b",
+          },
+        },
+        x: 100,
+        y: 100,
+        nextId: null,
+        true: [],
+        false: [],
+      };
+
     default:
       throw new Error("Unknown node type");
   }

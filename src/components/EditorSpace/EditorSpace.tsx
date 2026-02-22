@@ -63,6 +63,15 @@ export default function EditorSpace() {
       connectNodes(active.data.current.nodeId, over.data.current.nodeId);
     }
 
+    if (
+      (active.data.current?.type === "output1" ||
+        active.data.current?.type === "output2") &&
+      over?.data.current?.type === "input"
+    ) {
+      connectNodes(active.data.current.nodeId, over.data.current.nodeId);
+      console.log(active.data.current.nodeId, over.data.current.nodeId);
+    }
+
     setActiveConnection(null);
   };
 
@@ -70,6 +79,23 @@ export default function EditorSpace() {
     const { active, delta } = event;
 
     if (active.data.current?.type === "output") {
+      const sourceId = active.data.current.nodeId;
+
+      const sourceNode = program.body.find((n) => n.id === sourceId);
+
+      if (!sourceNode) return;
+
+      setActiveConnection({
+        from: sourceNode,
+        toX: sourceNode.x + delta.x + 315,
+        toY: sourceNode.y + delta.y + 80,
+      });
+    }
+
+    if (
+      active.data.current?.type === "output2" ||
+      active.data.current?.type === "output1"
+    ) {
       const sourceId = active.data.current.nodeId;
 
       const sourceNode = program.body.find((n) => n.id === sourceId);

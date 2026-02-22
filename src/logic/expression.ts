@@ -42,6 +42,7 @@ export function stringToExpression(expression: string): ExpressionNode {
   let stack: string[] = [];
   let minPriority = Infinity;
   let operatorIndex = -1;
+  let foundOperator = "";
 
   for (let i = 0; i < current.length; i++) {
     const char = current[i];
@@ -56,27 +57,49 @@ export function stringToExpression(expression: string): ExpressionNode {
       continue;
     }
 
-    if (stack.length === 0 && "+-*/".includes(char)) {
-      let priority = 0;
+    if (stack.length === 0) {
+      if (i < current.length - 1) {
+        const twoCharOp = current.substring(i, i + 2);
+        if ([">=", "<=", "=="].includes(twoCharOp)) {
+          const priority = getPriority(twoCharOp);
+          if (priority <= minPriority) {
+            minPriority = priority;
+            operatorIndex = i;
+            foundOperator = twoCharOp;
+          }
+          i++;
+          continue;
+        }
+      }
 
-      if (char === "+" || char === "-") priority = 1;
-      if (char === "*" || char === "/") priority = 2;
-
-      if (priority <= minPriority) {
-        minPriority = priority;
-        operatorIndex = i;
+      if ("+-*/><".includes(char)) {
+        const priority = getPriority(char);
+        if (priority <= minPriority) {
+          minPriority = priority;
+          operatorIndex = i;
+          foundOperator = char;
+        }
       }
     }
   }
 
   if (operatorIndex !== -1) {
     const left = current.slice(0, operatorIndex);
-    const right = current.slice(operatorIndex + 1);
-    const operator = current[operatorIndex];
+    const right = current.slice(operatorIndex + foundOperator.length);
 
     return {
       type: "BinaryExpression",
-      operator: operator as "+" | "-" | "*" | "/" | "%",
+      operator: foundOperator as
+        | "+"
+        | "-"
+        | "*"
+        | "/"
+        | "%"
+        | ">"
+        | "<"
+        | ">="
+        | "<="
+        | "==",
       left: stringToExpression(left),
       right: stringToExpression(right),
     };
@@ -87,20 +110,20 @@ export function stringToExpression(expression: string): ExpressionNode {
 
 function getPriority(operator: string): number {
   switch (operator) {
-    case "+":
-    case "-":
-      return 1;
-
-    case "*":
-    case "/":
-      return 2;
-
     case ">":
     case "<":
     case ">=":
     case "<=":
     case "==":
-      return 0;
+      return 3;
+
+    case "*":
+    case "/":
+      return 2;
+
+    case "+":
+    case "-":
+      return 1;
 
     default:
       return 0;

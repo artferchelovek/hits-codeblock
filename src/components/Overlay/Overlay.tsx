@@ -40,6 +40,7 @@ const Palette = () => {
       <DraggableBlock type="VariableDeclaration" />
       <DraggableBlock type="Assignment" />
       <DraggableBlock type="Print" />
+      <DraggableBlock type={"If"} />
     </div>
   );
 };

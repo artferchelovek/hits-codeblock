@@ -39,7 +39,8 @@ export interface ForNode extends BaseNodeAttributes {
 export interface IfNode extends BaseNodeAttributes {
   type: "If";
   condition: ExpressionNode;
-  body: StatementNode[];
+  true: StatementNode[];
+  false: StatementNode[];
 }
 
 export interface PrintNode extends BaseNodeAttributes {

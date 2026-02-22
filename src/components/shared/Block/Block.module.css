@@ -55,6 +55,23 @@ input {
     transition: 150ms;
 }
 
+.outputConnectors {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    right: -6px;
+    bottom: 0;
+    position: absolute;
+    height: 100%;
+
+    .output {
+        background: var(--md-sys-color-error);
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+}
+
 .outputConnector {
     position: absolute;
     bottom: 4px;
