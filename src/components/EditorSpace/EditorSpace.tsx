@@ -4,20 +4,34 @@ import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
 import { useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
-import type { StatementNode } from "../../types/ast.ts";
-import ActiveLine from "./ActiveLine.tsx";
+import type { IfNode } from "../../types/ast.ts";
+import { getConnectorPos } from "../../logic/getConnectorPos.ts";
+import { createNode } from "../../logic/nodeFactory.ts";
 
-export type ActiveLine = {
-  from: StatementNode;
+export type ActiveLineData = {
+  startX: number;
+  startY: number;
   toX: number;
   toY: number;
 } | null;
 
-export default function EditorSpace() {
-  const { program, updateStatement } = useBlockContext();
+interface EditorSpaceProps {
+  setPanMain?: (
+    value:
+      | ((prevState: { x: number; y: number }) => { x: number; y: number })
+      | {
+          x: number;
+          y: number;
+        },
+  ) => void;
+}
 
-  const [activeConnection, setActiveConnection] = useState<ActiveLine>(null);
-  const [pan, setPan] = useState({ x: 0, y: 0 });
+export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
+  const { program, updateStatement, addStatement } = useBlockContext();
+
+  const [activeConnection, setActiveConnection] =
+    useState<ActiveLineData>(null);
+  const [pan, setPan] = useState({ x: -2000, y: -2000 });
   const [isPanning, setIsPanning] = useState(false);
 
   const { setNodeRef } = useDroppable({
@@ -27,26 +41,36 @@ export default function EditorSpace() {
   const containerRef = useRef<HTMLDivElement>(null);
   const lastMouse = useRef({ x: 0, y: 0 });
 
-  function connectNodes(sourceId: string, targetId: string) {
-    updateStatement(sourceId, (node) => ({
-      ...node,
-      nextId: targetId,
-    }));
-
+  function connectNodes(
+    sourceId: string,
+    targetId: string,
+    connectionType: string,
+  ) {
     program.body.forEach((n) => {
-      if (n.nextId === targetId && n.id !== sourceId) {
-        updateStatement(n.id, (node) => ({
-          ...node,
-          nextId: null,
-        }));
+      updateStatement(n.id, (node) => {
+        const newNode = { ...node };
+        if (newNode.nextId === targetId) newNode.nextId = null;
+        if (node.type === "If") {
+          if ((node as IfNode).trueId === targetId)
+            (newNode as any).trueId = null;
+          if ((node as IfNode).falseId === targetId)
+            (newNode as any).falseId = null;
+        }
+        return newNode;
+      });
+    });
+
+    updateStatement(sourceId, (node) => {
+      if (node.type === "If") {
+        if (connectionType === "output1") return { ...node, trueId: targetId };
+        if (connectionType === "output2") return { ...node, falseId: targetId };
       }
+      return { ...node, nextId: targetId };
     });
   }
 
-  const dragEnd = (event: { active: any; over: any; delta: any }) => {
+  const dragEnd = (event: any) => {
     const { active, over, delta } = event;
-
-    if (!active) return;
 
     if (active.data.current?.type === "node") {
       updateStatement(active.id, (node) => ({
@@ -56,20 +80,29 @@ export default function EditorSpace() {
       }));
     }
 
-    if (
-      active.data.current?.type === "output" &&
-      over?.data.current?.type === "input"
-    ) {
-      connectNodes(active.data.current.nodeId, over.data.current.nodeId);
+    if (!over) {
+      setActiveConnection(null);
+      return;
     }
 
-    if (
-      (active.data.current?.type === "output1" ||
-        active.data.current?.type === "output2") &&
-      over?.data.current?.type === "input"
-    ) {
-      connectNodes(active.data.current.nodeId, over.data.current.nodeId);
-      console.log(active.data.current.nodeId, over.data.current.nodeId);
+    if (String(active.id).startsWith("palette-")) {
+      const type = active.data.current?.type;
+      if (type) {
+        const newNode = createNode(type);
+        newNode.x = 100 + delta.x - pan.x;
+        newNode.y = 100 + delta.y - pan.y;
+        addStatement(null, newNode);
+      }
+    }
+
+    const connectionType = active.data.current?.type;
+    const isOutput = ["output", "output1", "output2"].includes(connectionType);
+    if (isOutput && over.data.current?.type === "input") {
+      connectNodes(
+        active.data.current.nodeId,
+        over.data.current.nodeId,
+        connectionType,
+      );
     }
 
     setActiveConnection(null);
@@ -77,41 +110,34 @@ export default function EditorSpace() {
 
   const dragMove = (event: { active: any; delta: any }) => {
     const { active, delta } = event;
+    const type = active.data.current?.type;
 
-    if (active.data.current?.type === "output") {
+    if (type === "output" || type === "output1" || type === "output2") {
       const sourceId = active.data.current.nodeId;
 
-      const sourceNode = program.body.find((n) => n.id === sourceId);
+      let connectorId = `out-${sourceId}`;
+      if (type === "output1") connectorId = `out-true-${sourceId}`;
+      if (type === "output2") connectorId = `out-false-${sourceId}`;
 
-      if (!sourceNode) return;
+      const startPos = getConnectorPos(connectorId, containerRef);
 
-      setActiveConnection({
-        from: sourceNode,
-        toX: sourceNode.x + delta.x + 315,
-        toY: sourceNode.y + delta.y + 80,
-      });
-    }
-
-    if (
-      active.data.current?.type === "output2" ||
-      active.data.current?.type === "output1"
-    ) {
-      const sourceId = active.data.current.nodeId;
-
-      const sourceNode = program.body.find((n) => n.id === sourceId);
-
-      if (!sourceNode) return;
-
-      setActiveConnection({
-        from: sourceNode,
-        toX: sourceNode.x + delta.x + 315,
-        toY: sourceNode.y + delta.y + 80,
-      });
+      if (startPos) {
+        setActiveConnection({
+          startX: startPos.x - pan.x,
+          startY: startPos.y - pan.y,
+          toX: startPos.x + delta.x - pan.x,
+          toY: startPos.y + delta.y - pan.y,
+        });
+      }
     }
   };
 
   function handleMouseDown(e: React.MouseEvent) {
-    if (e.button !== 1) return;
+    if (
+      e.button !== 1 &&
+      !(e.button === 0 && (e.target as HTMLElement).id === "editor")
+    )
+      return;
 
     e.preventDefault();
     setIsPanning(true);
@@ -128,6 +154,13 @@ export default function EditorSpace() {
       x: prev.x + dx,
       y: prev.y + dy,
     }));
+
+    if (setPanMain) {
+      setPanMain((prev) => ({
+        x: prev.x + dx,
+        y: prev.y + dy,
+      }));
+    }
 
     lastMouse.current = { x: e.clientX, y: e.clientY };
   }
@@ -148,6 +181,7 @@ export default function EditorSpace() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        id="editor"
         style={{
           width: "100vw",
           height: "100vh",
@@ -159,24 +193,119 @@ export default function EditorSpace() {
           style={{
             position: "absolute",
             transform: `translate(${pan.x}px, ${pan.y}px)`,
-            width: "100%",
-            height: "100%",
+            width: "5000px",
+            height: "5000px",
+            pointerEvents: "none",
           }}
         >
-          <svg className={styles.connections}>
-            {activeConnection && <ActiveLine connection={activeConnection} />}
+          <svg
+            className={styles.connections}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "5000px",
+              height: "5000px",
+              overflow: "visible",
+              pointerEvents: "none",
+            }}
+          >
+            {activeConnection && (
+              <ConnectionLine
+                startX={activeConnection.startX}
+                startY={activeConnection.startY}
+                endX={activeConnection.toX}
+                endY={activeConnection.toY}
+                color="rgba(204, 229, 255, 0.6)"
+              />
+            )}
 
             {program.body.map((node) => {
-              if (!node.nextId) return null;
+              const lines = [];
 
-              const target = program.body.find((n) => n.id === node.nextId);
-              if (!target) return null;
+              if (node.nextId) {
+                const start = getConnectorPos(`out-${node.id}`, containerRef);
+                const end = getConnectorPos(
+                  `input-${node.nextId}`,
+                  containerRef,
+                );
+                if (start && end) {
+                  lines.push(
+                    <ConnectionLine
+                      key={`${node.id}-next`}
+                      startX={start.x - pan.x}
+                      startY={start.y - pan.y}
+                      endX={end.x - pan.x}
+                      endY={end.y - pan.y}
+                    />,
+                  );
+                }
+              }
 
-              return <ConnectionLine key={node.id} from={node} to={target} />;
+              if (node.type === "If") {
+                const ifNode = node as IfNode;
+
+                if (ifNode.trueId) {
+                  const start = getConnectorPos(
+                    `out-true-${node.id}`,
+                    containerRef,
+                  );
+                  const end = getConnectorPos(
+                    `input-${ifNode.trueId}`,
+                    containerRef,
+                  );
+                  if (start && end) {
+                    lines.push(
+                      <ConnectionLine
+                        key={`${node.id}-true`}
+                        startX={start.x}
+                        startY={start.y}
+                        endX={end.x}
+                        endY={end.y}
+                        color="green"
+                      />,
+                    );
+                  }
+                }
+
+                if (ifNode.falseId) {
+                  const start = getConnectorPos(
+                    `out-false-${node.id}`,
+                    containerRef,
+                  );
+                  const end = getConnectorPos(
+                    `input-${ifNode.falseId}`,
+                    containerRef,
+                  );
+                  if (start && end) {
+                    lines.push(
+                      <ConnectionLine
+                        key={`${node.id}-false`}
+                        startX={start.x}
+                        startY={start.y}
+                        endX={end.x}
+                        endY={end.y}
+                        color="red"
+                      />,
+                    );
+                  }
+                }
+              }
+
+              return lines;
             })}
           </svg>
 
-          <div ref={setNodeRef} className={styles.editor}>
+          <div
+            ref={setNodeRef}
+            className={styles.editor}
+            style={{
+              width: "5000px",
+              height: "5000px",
+              position: "absolute",
+              pointerEvents: "all",
+            }}
+          >
             {program.body.map((node) => (
               <RenderNode key={node.id} node={node} />
             ))}

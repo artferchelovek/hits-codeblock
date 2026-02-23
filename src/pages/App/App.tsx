@@ -4,9 +4,11 @@ import EditorSpace from "../../components/EditorSpace/EditorSpace";
 import { DndContext } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext";
 import { createNode } from "../../logic/nodeFactory";
+import { useState } from "react";
 
 export default function App() {
   const { addStatement } = useBlockContext();
+  const [panMain, setPanMain] = useState({ x: -2000, y: -2000 });
 
   const dragEnd = (event: any) => {
     const { active, over, delta } = event;
@@ -19,8 +21,8 @@ export default function App() {
       if (!type) return;
 
       const newNode = createNode(type);
-      newNode.x = newNode.x + delta.x;
-      newNode.y = newNode.y + delta.y;
+      newNode.x = newNode.x + delta.x - panMain.x;
+      newNode.y = newNode.y + delta.y - panMain.y;
       addStatement(null, newNode);
     }
   };
@@ -28,7 +30,7 @@ export default function App() {
   return (
     <DndContext onDragEnd={dragEnd}>
       <Overlay />
-      <EditorSpace />
+      <EditorSpace setPanMain={setPanMain} />
     </DndContext>
   );
 }

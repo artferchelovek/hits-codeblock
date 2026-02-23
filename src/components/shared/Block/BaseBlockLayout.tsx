@@ -46,7 +46,11 @@ export default function BaseBlockLayout({ node, children }: Props) {
           : undefined,
       }}
     >
-      <div ref={setInputRef} className={styles.inputConnector} />
+      <div
+        ref={setInputRef}
+        id={`input-${node.id}`}
+        className={styles.inputConnector}
+      />
 
       <div className={styles.label}>
         <p className={styles.labelP}>{node.type}</p>
@@ -56,6 +60,7 @@ export default function BaseBlockLayout({ node, children }: Props) {
       <div className={styles.content}>{children}</div>
 
       <div
+        id={`out-${node.id}`}
         ref={setOutRef}
         {...outListeners}
         {...outAttr}

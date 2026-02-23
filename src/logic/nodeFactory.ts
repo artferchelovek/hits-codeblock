@@ -62,8 +62,8 @@ export function createNode(type: string): StatementNode {
         x: 100,
         y: 100,
         nextId: null,
-        true: [],
-        false: [],
+        trueId: null,
+        falseId: null,
       };
 
     default:

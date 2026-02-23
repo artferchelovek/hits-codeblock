@@ -52,7 +52,11 @@ export default function If({ node }: { node: IfNode }) {
           : undefined,
       }}
     >
-      <div ref={setInputRef} className={styles.inputConnector} />
+      <div
+        ref={setInputRef}
+        id={`input-${node.id}`}
+        className={styles.inputConnector}
+      />
 
       <div className={styles.label}>
         <p className={styles.labelP}>{node.type}</p>
@@ -63,18 +67,22 @@ export default function If({ node }: { node: IfNode }) {
 
       <div className={styles.outputConnectors}>
         <div
+          id={`out-true-${node.id}`}
           ref={setOutRef1}
           {...outListeners1}
           {...outAttr1}
           className={styles.output}
+          title="True"
         />
         <div
+          id={`out-${node.id}`}
           ref={setOutRef}
           {...outListeners}
           {...outAttr}
           className={styles.output}
         />
         <div
+          id={`out-false-${node.id}`}
           ref={setOutRef2}
           {...outListeners2}
           {...outAttr2}

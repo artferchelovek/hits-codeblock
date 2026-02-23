@@ -33,14 +33,14 @@ export interface ForNode extends BaseNodeAttributes {
   iterator: string;
   from: ExpressionNode;
   to: ExpressionNode;
-  body: StatementNode[];
+  body: string | null;
 }
 
 export interface IfNode extends BaseNodeAttributes {
   type: "If";
   condition: ExpressionNode;
-  true: StatementNode[];
-  false: StatementNode[];
+  trueId: string | null;
+  falseId: string | null;
 }
 
 export interface PrintNode extends BaseNodeAttributes {
