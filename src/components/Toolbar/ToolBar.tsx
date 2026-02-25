@@ -4,7 +4,7 @@ import { useBlockContext } from "../../context/BlockContext.tsx";
 import SvgDownload from "../../svg/SvgDownload.tsx";
 import SvgUpload from "../../svg/SvgUpload.tsx";
 import downloadProgram from "../../logic/downloadProgram.ts";
-import { useRef } from "react";
+import React, { useRef } from "react";
 import { uploadProgram } from "../../logic/uploadProgram.ts";
 
 export default function ToolBar() {

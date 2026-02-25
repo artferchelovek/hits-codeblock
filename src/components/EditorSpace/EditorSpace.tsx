@@ -2,7 +2,7 @@ import { DndContext, useDroppable } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext";
 import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
 import type { ForNode, IfNode } from "../../types/ast.ts";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";

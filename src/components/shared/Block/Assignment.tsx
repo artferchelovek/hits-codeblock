@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import type { AssignmentNode } from "../../../types/ast.ts";
 
 export default function Assignment({ node }: { node: AssignmentNode }) {
+  const [targetValue, setTargetValue] = useState("");
   const [inputValue, setInputValue] = useState(renderExpression(node.value));
 
   const { updateStatement } = useBlockContext();
@@ -16,16 +17,37 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
     setInputValue(renderExpression(node.value));
   }, [node.value]);
 
+  useEffect(() => {
+    const renderTarget =
+      typeof node.target === "string"
+        ? node.target
+        : renderExpression(node.target);
+    setTargetValue(renderTarget);
+  }, [node.target]);
+
   return (
     <BaseNodeLayout node={node}>
       <input
         onChange={(e) => {
-          updateStatement(node.id, (n) => ({
-            ...n,
-            target: e.target.value,
-          }));
+          const value = e.target.value;
+          setTargetValue(value);
+
+          try {
+            const parsed = stringToExpression(value);
+            if (parsed.type === "Identifier") {
+              updateStatement(node.id, (n) => ({
+                ...n,
+                target: parsed.name,
+              }));
+            } else if (parsed.type === "MemberExpression") {
+              updateStatement(node.id, (n) => ({
+                ...n,
+                target: parsed,
+              }));
+            }
+          } catch {}
         }}
-        value={node.target}
+        value={targetValue}
         type="text"
         placeholder="a"
       />

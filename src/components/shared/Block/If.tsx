@@ -50,7 +50,12 @@ export default function If({ node }: { node: IfNode }) {
           } catch {}
         }}
       />
-      <select value={operator} onChange={(e) => setOperator(e.target.value)}>
+      <select
+        value={operator}
+        onChange={(e) =>
+          setOperator(e.target.value as ">" | "<" | ">=" | "<=" | "==")
+        }
+      >
         <option value=">">&gt;</option>
         <option value="<"> &lt;</option>
         <option value=">=">&ge;</option>

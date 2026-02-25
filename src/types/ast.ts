@@ -31,7 +31,7 @@ export interface VariableDeclarationNode extends BaseNodeAttributes {
 
 export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
-  target: string; // ima peremennoi
+  target: string | MemberExpressionNode; // ima peremennoi
   value: ExpressionNode;
   method?: string;
 }
@@ -60,7 +60,9 @@ export type ExpressionNode =
   | LiteralNode
   | IdentifierNode
   | StringNode
-  | BinaryExpressionNode;
+  | BinaryExpressionNode
+  | ArrayNode
+  | MemberExpressionNode;
 
 export interface LiteralNode {
   type: "Literal";
@@ -70,6 +72,12 @@ export interface LiteralNode {
 export interface ArrayNode {
   type: "Array";
   value: ExpressionNode[];
+}
+
+export interface MemberExpressionNode {
+  type: "MemberExpression";
+  object: ExpressionNode;
+  index: ExpressionNode;
 }
 
 export interface IdentifierNode {
