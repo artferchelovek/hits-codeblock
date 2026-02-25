@@ -1,9 +1,36 @@
 import "./App.module.css";
+import Overlay from "../../components/Overlay/Overlay";
+import EditorSpace from "../../components/EditorSpace/EditorSpace";
+import { DndContext } from "@dnd-kit/core";
+import { useBlockContext } from "../../context/BlockContext";
+import { createNode } from "../../logic/nodeFactory";
+import { useState } from "react";
 
 export default function App() {
+  const { addStatement } = useBlockContext();
+  const [panMain, setPanMain] = useState({ x: -2000, y: -2000 });
+
+  const dragEnd = (event: any) => {
+    const { active, over, delta } = event;
+
+    if (!over) return;
+
+    if (over.id === "root") {
+      const type = active.data.current?.type;
+
+      if (!type) return;
+
+      const newNode = createNode(type);
+      newNode.x = newNode.x + delta.x - panMain.x;
+      newNode.y = newNode.y + delta.y - panMain.y;
+      addStatement(null, newNode);
+    }
+  };
+
   return (
-    <>
-      <h1>Init repo + test</h1>
-    </>
+    <DndContext onDragEnd={dragEnd}>
+      <Overlay />
+      <EditorSpace setPanMain={setPanMain} />
+    </DndContext>
   );
 }

@@ -1,0 +1,17 @@
+.connections {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.editor {
+    background-image: radial-gradient(#d7d7d7 1px, transparent 1px); background-size: 20px 20px;
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+}
