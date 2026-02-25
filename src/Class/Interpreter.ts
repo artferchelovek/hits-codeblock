@@ -1,11 +1,14 @@
 import type {
   AssignmentNode,
   ExpressionNode,
+  ForNode,
   ProgramNode,
   StatementNode,
   VariableDeclarationNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
+import For from "../components/shared/Block/For.tsx";
+import { ForActions } from "./ForActions.ts";
 
 export class Interpreter {
   private variableData = new VariableActions();
@@ -35,6 +38,23 @@ export class Interpreter {
     if (!currentNode) {
       throw new Error("The starting node does not point anywhere.");
     }
+
+    while (currentNode.nextId !== null) {
+      switch (currentNode.type) {
+        case "Assignment":
+          this.assignment(currentNode);
+          break;
+        case "VariableDeclaration":
+          this.declaration(currentNode);
+          break;
+        case "For":
+          break;
+        case "If":
+          break;
+        case "Print":
+          break;
+      }
+    }
   }
 
   public assignment(node: AssignmentNode): void {
@@ -47,5 +67,9 @@ export class Interpreter {
     } catch (e) {
       throw new Error(`Unable to declare assignment: `); //???
     }
+  }
+
+  public forStatement(node: ForNode): void {
+    let actions = ForActions(node);
   }
 }
