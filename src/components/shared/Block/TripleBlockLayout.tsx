@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import styles from "./Block.module.css";
+import { useBlockContext } from "../../../context/BlockContext.tsx";
 
 type Props = {
   node: {
@@ -13,6 +14,8 @@ type Props = {
 };
 
 export default function TripleBlockLayout({ node, children }: Props) {
+  const { removeStatement } = useBlockContext();
+
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
     data: { type: "node" },
@@ -69,7 +72,17 @@ export default function TripleBlockLayout({ node, children }: Props) {
       />
 
       <div className={styles.label}>
-        <p className={styles.labelP}>{node.type}</p>
+        <div className={styles.labelFlex}>
+          <div
+            onClick={() => {
+              removeStatement(node.id);
+            }}
+            className={styles.buttonDelete}
+          >
+            -
+          </div>
+          <p className={styles.labelP}>{node.type}</p>
+        </div>
         <p {...listeners}>☰</p>
       </div>
 
@@ -91,13 +104,15 @@ export default function TripleBlockLayout({ node, children }: Props) {
           {...outAttr}
           className={styles.output}
         />
-        <div
-          id={`out-false-${node.id}`}
-          ref={setOutRef2}
-          {...outListeners2}
-          {...outAttr2}
-          className={styles.output}
-        />
+        {node.type === "If" && (
+          <div
+            id={`out-false-${node.id}`}
+            ref={setOutRef2}
+            {...outListeners2}
+            {...outAttr2}
+            className={styles.output}
+          />
+        )}
       </div>
     </div>
   );

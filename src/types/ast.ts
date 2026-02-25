@@ -15,7 +15,13 @@ export type StatementNode =
   | AssignmentNode
   | ForNode
   | IfNode
-  | PrintNode;
+  | PrintNode
+  | StartNode;
+
+export interface StartNode extends BaseNodeAttributes {
+  type: "StartNode";
+  nextId: string | null;
+}
 
 export interface VariableDeclarationNode extends BaseNodeAttributes {
   type: "VariableDeclaration";
@@ -26,6 +32,7 @@ export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
   target: string; // ima peremennoi
   value: ExpressionNode;
+  method?: string;
 }
 
 export interface ForNode extends BaseNodeAttributes {
@@ -57,6 +64,11 @@ export type ExpressionNode =
 export interface LiteralNode {
   type: "Literal";
   value: number;
+}
+
+export interface ArrayNode {
+  type: "Array";
+  value: ExpressionNode[];
 }
 
 export interface IdentifierNode {

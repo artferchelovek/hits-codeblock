@@ -72,13 +72,6 @@ export const BlockContextProvider = ({
           return updater(stmt);
         }
 
-        if ("body" in stmt) {
-          return {
-            ...stmt,
-            body: updateRecursively(stmt.body),
-          };
-        }
-
         return stmt;
       });
 
@@ -90,13 +83,7 @@ export const BlockContextProvider = ({
 
   const removeStatement = (id: string) => {
     const removeRecursively = (statements: StatementNode[]): StatementNode[] =>
-      statements
-        .filter((stmt) => stmt.id !== id)
-        .map((stmt) =>
-          "body" in stmt
-            ? { ...stmt, body: removeRecursively(stmt.body) }
-            : stmt,
-        );
+      statements.filter((stmt) => stmt.id !== id);
 
     setProgram((prev) => ({
       ...prev,
