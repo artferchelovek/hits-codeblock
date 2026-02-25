@@ -49,11 +49,13 @@ export default function BaseBlockLayout({ node, children }: Props) {
           : undefined,
       }}
     >
-      <div
-        ref={setInputRef}
-        id={`input-${node.id}`}
-        className={styles.inputConnector}
-      />
+      {node.type !== "StartNode" && (
+        <div
+          ref={setInputRef}
+          id={`input-${node.id}`}
+          className={styles.inputConnector}
+        />
+      )}
 
       <div className={styles.label}>
         <div className={styles.labelFlex}>

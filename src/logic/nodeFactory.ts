@@ -77,6 +77,14 @@ export function createNode(type: string): StatementNode {
         nextId: null,
         bodyId: null,
       };
+    case "StartNode":
+      return {
+        id: generateId(),
+        type: "StartNode",
+        x: 100,
+        y: 100,
+        nextId: null,
+      };
 
     default:
       throw new Error("Unknown node type");
