@@ -42,7 +42,7 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
 
             updateStatement(node.id, (n) => ({
               ...n,
-              expression: parsed,
+              value: parsed,
             }));
           } catch {}
         }}

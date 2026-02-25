@@ -3,6 +3,7 @@ import DeclaringVariable from "../components/shared/Block/DeclaringVariable.tsx"
 import Assignment from "../components/shared/Block/Assignment.tsx";
 import Print from "../components/shared/Block/Print.tsx";
 import If from "../components/shared/Block/If.tsx";
+import For from "../components/shared/Block/For.tsx";
 
 export default function RenderNode({ node }: { node: StatementNode }) {
   switch (node.type) {
@@ -14,7 +15,9 @@ export default function RenderNode({ node }: { node: StatementNode }) {
       return <Print node={node} />;
     case "If":
       return <If node={node} />;
+    case "For":
+      return <For node={node} />;
     default:
-      return <p>{node.type}</p>;
+      return <p>мяу</p>;
   }
 }

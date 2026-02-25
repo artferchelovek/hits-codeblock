@@ -65,6 +65,18 @@ export function createNode(type: string): StatementNode {
         trueId: null,
         falseId: null,
       };
+    case "For":
+      return {
+        id: generateId(),
+        type: "For",
+        iterator: { type: "Identifier", name: "b" },
+        from: { type: "Identifier", name: "b" },
+        to: { type: "Identifier", name: "b" },
+        x: 100,
+        y: 100,
+        nextId: null,
+        bodyId: null,
+      };
 
     default:
       throw new Error("Unknown node type");
