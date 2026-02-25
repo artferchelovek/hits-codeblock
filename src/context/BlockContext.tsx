@@ -9,6 +9,7 @@ interface BlockContextType {
     updater: (node: StatementNode) => StatementNode,
   ) => void;
   removeStatement: (id: string) => void;
+  removeProgram: () => void;
 }
 
 const BlockContext = createContext<BlockContextType | null>(null);
@@ -91,9 +92,18 @@ export const BlockContextProvider = ({
     }));
   };
 
+  const removeProgram = () => {
+    setProgram((prev) => ({ ...prev, body: [] }));
+  };
   return (
     <BlockContext.Provider
-      value={{ program, addStatement, updateStatement, removeStatement }}
+      value={{
+        program,
+        addStatement,
+        updateStatement,
+        removeStatement,
+        removeProgram,
+      }}
     >
       {children}
     </BlockContext.Provider>

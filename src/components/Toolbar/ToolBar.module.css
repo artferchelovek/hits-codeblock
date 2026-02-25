@@ -1,0 +1,18 @@
+.toolBar {
+    display: flex;
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    backdrop-filter: blur(1px);
+
+    .elem {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
+        background: var(--md-sys-color-primary-container);
+        border-radius: 20px;
+        box-shadow: var(--md-sys-elevation);
+        cursor: pointer;
+    }
+}
