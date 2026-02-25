@@ -1,45 +1,35 @@
 import type { ExpressionNode } from "../types/ast.ts";
 
 export function stringToExpression(expression: string): ExpressionNode {
-  let current = expression.replace(/\s+/g, "");
+  let current = expression.trim();
 
-  const regNumber = /^-?\d+$/;
-  const regVariable = /^[a-zA-Z]+$/;
+  if (
+    (current.startsWith('"') && current.endsWith('"')) ||
+    (current.startsWith("'") && current.endsWith("'"))
+  ) {
+    return {
+      type: "String",
+      value: current.slice(1, -1),
+    };
+  }
 
   if (current[0] === "(" && current[current.length - 1] === ")") {
     let depth = 0;
     let isWrapped = true;
-
     for (let i = 0; i < current.length - 1; i++) {
       if (current[i] === "(") depth++;
       if (current[i] === ")") depth--;
-
       if (depth === 0) {
         isWrapped = false;
         break;
       }
     }
-
-    if (isWrapped) {
-      current = current.slice(1, -1);
-    }
+    if (isWrapped) return stringToExpression(current.slice(1, -1));
   }
 
-  if (regNumber.test(current)) {
-    return {
-      type: "Literal",
-      value: Number(current),
-    };
-  }
-
-  if (regVariable.test(current)) {
-    return {
-      type: "Identifier",
-      name: current,
-    };
-  }
-
-  let stack: string[] = [];
+  let stack = 0;
+  let inString = false;
+  let quoteChar = "";
   let minPriority = Infinity;
   let operatorIndex = -1;
   let foundOperator = "";
@@ -47,32 +37,45 @@ export function stringToExpression(expression: string): ExpressionNode {
   for (let i = 0; i < current.length; i++) {
     const char = current[i];
 
+    if (
+      (char === '"' || char === "'") &&
+      (i === 0 || current[i - 1] !== "\\")
+    ) {
+      if (!inString) {
+        inString = true;
+        quoteChar = char;
+      } else if (char === quoteChar) {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (inString) continue;
+
     if (char === "(") {
-      stack.push(char);
+      stack++;
       continue;
     }
-
     if (char === ")") {
-      stack.pop();
+      stack--;
       continue;
     }
 
-    if (stack.length === 0) {
-      if (i < current.length - 1) {
-        const twoCharOp = current.substring(i, i + 2);
-        if ([">=", "<=", "=="].includes(twoCharOp)) {
-          const priority = getPriority(twoCharOp);
-          if (priority <= minPriority) {
-            minPriority = priority;
-            operatorIndex = i;
-            foundOperator = twoCharOp;
-          }
-          i++;
-          continue;
+    if (stack === 0) {
+      const twoCharOp = current.substring(i, i + 2);
+      const ops2 = [">=", "<=", "=="];
+      if (ops2.includes(twoCharOp)) {
+        const priority = getPriority(twoCharOp);
+        if (priority <= minPriority) {
+          minPriority = priority;
+          operatorIndex = i;
+          foundOperator = twoCharOp;
         }
+        i++;
+        continue;
       }
 
-      if ("+-*/><".includes(char)) {
+      if ("+-*/><%".includes(char)) {
         const priority = getPriority(char);
         if (priority <= minPriority) {
           minPriority = priority;
@@ -84,25 +87,25 @@ export function stringToExpression(expression: string): ExpressionNode {
   }
 
   if (operatorIndex !== -1) {
-    const left = current.slice(0, operatorIndex);
-    const right = current.slice(operatorIndex + foundOperator.length);
-
     return {
       type: "BinaryExpression",
-      operator: foundOperator as
-        | "+"
-        | "-"
-        | "*"
-        | "/"
-        | "%"
-        | ">"
-        | "<"
-        | ">="
-        | "<="
-        | "==",
-      left: stringToExpression(left),
-      right: stringToExpression(right),
+      operator: foundOperator as any,
+      left: stringToExpression(current.slice(0, operatorIndex)),
+      right: stringToExpression(
+        current.slice(operatorIndex + foundOperator.length),
+      ),
     };
+  }
+
+  const regNumber = /^-?\d+(\.\d+)?$/;
+  const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
+
+  const trimmedCurrent = current.trim();
+  if (regNumber.test(trimmedCurrent)) {
+    return { type: "Literal", value: Number(trimmedCurrent) };
+  }
+  if (regVariable.test(trimmedCurrent)) {
+    return { type: "Identifier", name: trimmedCurrent };
   }
 
   throw new Error("Invalid expression: " + expression);
@@ -110,21 +113,19 @@ export function stringToExpression(expression: string): ExpressionNode {
 
 function getPriority(operator: string): number {
   switch (operator) {
+    case "==":
     case ">":
     case "<":
     case ">=":
     case "<=":
-    case "==":
-      return 3;
-
-    case "*":
-    case "/":
-      return 2;
-
+      return 1;
     case "+":
     case "-":
-      return 1;
-
+      return 2;
+    case "*":
+    case "/":
+    case "%":
+      return 3;
     default:
       return 0;
   }
@@ -135,33 +136,18 @@ export function renderExpression(expr: ExpressionNode): string {
     case "Literal":
       return String(expr.value);
 
+    case "String":
+      return `"${expr.value}"`;
+
     case "Identifier":
       return expr.name;
 
-    case "BinaryExpression": {
-      const left = expr.left;
-      const right = expr.right;
-
-      const currentPriority = getPriority(expr.operator);
-
-      let leftStr = renderExpression(left);
-      let rightStr = renderExpression(right);
-
-      if (
-        left.type === "BinaryExpression" &&
-        getPriority(left.operator) < currentPriority
-      ) {
-        leftStr = `(${leftStr})`;
-      }
-
-      if (
-        right.type === "BinaryExpression" &&
-        getPriority(right.operator) < currentPriority
-      ) {
-        rightStr = `(${rightStr})`;
-      }
-
+    case "BinaryExpression":
+      const leftStr = renderExpression(expr.left);
+      const rightStr = renderExpression(expr.right);
       return `${leftStr} ${expr.operator} ${rightStr}`;
-    }
+
+    default:
+      return "";
   }
 }

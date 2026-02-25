@@ -69,6 +69,7 @@ input {
         width: 12px;
         height: 12px;
         border-radius: 50%;
+        cursor: grab;
     }
 }
 
@@ -86,4 +87,11 @@ input {
 .outputConnector:hover {
     transform: scale(120%);
     transition: 150ms;
+}
+
+select {
+    padding: 5px 10px;
+    font: var(--md-sys-text-body-medium);
+    border-radius: 10px;
+    border: none;
 }
