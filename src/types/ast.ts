@@ -1,4 +1,5 @@
 export interface ProgramNode {
+  name: string;
   type: "Program";
   body: StatementNode[];
 }

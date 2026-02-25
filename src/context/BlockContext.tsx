@@ -10,6 +10,9 @@ interface BlockContextType {
   ) => void;
   removeStatement: (id: string) => void;
   removeProgram: () => void;
+  getProgram: () => ProgramNode;
+  refreshProgram: (newProgram: ProgramNode) => void;
+  updateProgramName: (programName: string) => ProgramNode;
 }
 
 const BlockContext = createContext<BlockContextType | null>(null);
@@ -27,6 +30,7 @@ export const BlockContextProvider = ({
 }) => {
   const [program, setProgram] = useState<ProgramNode>({
     type: "Program",
+    name: "NewProgram",
     body: [],
   });
 
@@ -37,28 +41,9 @@ export const BlockContextProvider = ({
         return { ...prev, body: [...prev.body, node] };
       }
 
-      const addRecursively = (statements: StatementNode[]): StatementNode[] =>
-        statements.map((stmt) => {
-          if (stmt.id === parentId && "body" in stmt) {
-            return {
-              ...stmt,
-              body: [...stmt.body, node],
-            };
-          }
-
-          if ("body" in stmt) {
-            return {
-              ...stmt,
-              body: addRecursively(stmt.body),
-            };
-          }
-
-          return stmt;
-        });
-
       return {
         ...prev,
-        body: addRecursively(prev.body),
+        body: prev.body,
       };
     });
   };
@@ -67,7 +52,7 @@ export const BlockContextProvider = ({
     id: string,
     updater: (node: StatementNode) => StatementNode,
   ) => {
-    const updateRecursively = (statements: StatementNode[]): StatementNode[] =>
+    const update = (statements: StatementNode[]): StatementNode[] =>
       statements.map((stmt) => {
         if (stmt.id === id) {
           return updater(stmt);
@@ -78,23 +63,39 @@ export const BlockContextProvider = ({
 
     setProgram((prev) => ({
       ...prev,
-      body: updateRecursively(prev.body),
+      body: update(prev.body),
     }));
   };
 
   const removeStatement = (id: string) => {
-    const removeRecursively = (statements: StatementNode[]): StatementNode[] =>
+    const remove = (statements: StatementNode[]): StatementNode[] =>
       statements.filter((stmt) => stmt.id !== id);
 
     setProgram((prev) => ({
       ...prev,
-      body: removeRecursively(prev.body),
+      body: remove(prev.body),
     }));
   };
 
   const removeProgram = () => {
     setProgram((prev) => ({ ...prev, body: [] }));
   };
+
+  const getProgram = (): ProgramNode => {
+    return program;
+  };
+
+  const refreshProgram = (newProgram: ProgramNode) => {
+    setProgram(newProgram);
+  };
+
+  const updateProgramName = (programName: string) => {
+    return {
+      ...program,
+      name: programNam,
+    };
+  };
+
   return (
     <BlockContext.Provider
       value={{
@@ -103,6 +104,9 @@ export const BlockContextProvider = ({
         updateStatement,
         removeStatement,
         removeProgram,
+        getProgram,
+        refreshProgram,
+        updateProgramName,
       }}
     >
       {children}

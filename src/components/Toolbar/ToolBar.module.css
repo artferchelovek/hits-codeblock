@@ -1,4 +1,5 @@
 .toolBar {
+    gap: 10px;
     display: flex;
     position: fixed;
     top: 25px;
@@ -14,5 +15,19 @@
         border-radius: 20px;
         box-shadow: var(--md-sys-elevation);
         cursor: pointer;
+    }
+
+    .fileName {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .fieldFileName {
+            font: var(--md-sys-text-title-medium);
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            box-shadow: var(--md-sys-elevation);
+            padding: 10px;
+        }
     }
 }
