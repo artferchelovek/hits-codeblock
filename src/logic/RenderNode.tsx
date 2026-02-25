@@ -4,6 +4,7 @@ import Assignment from "../components/shared/Block/Assignment.tsx";
 import Print from "../components/shared/Block/Print.tsx";
 import If from "../components/shared/Block/If.tsx";
 import For from "../components/shared/Block/For.tsx";
+import StartNode from "../components/shared/Block/StartNode.tsx";
 
 export default function RenderNode({ node }: { node: StatementNode }) {
   switch (node.type) {
@@ -17,6 +18,8 @@ export default function RenderNode({ node }: { node: StatementNode }) {
       return <If node={node} />;
     case "For":
       return <For node={node} />;
+    case "StartNode":
+      return <StartNode node={node} />;
     default:
       return <p>мяу</p>;
   }

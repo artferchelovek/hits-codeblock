@@ -69,13 +69,21 @@ export function createNode(type: string): StatementNode {
       return {
         id: generateId(),
         type: "For",
-        iterator: { type: "Identifier", name: "b" },
-        from: { type: "Identifier", name: "b" },
+        iterator: { type: "Identifier", name: "i" },
+        from: { type: "Identifier", name: "15" },
         to: { type: "Identifier", name: "b" },
         x: 100,
         y: 100,
         nextId: null,
         bodyId: null,
+      };
+    case "StartNode":
+      return {
+        id: generateId(),
+        type: "StartNode",
+        x: 100,
+        y: 100,
+        nextId: null,
       };
 
     default:

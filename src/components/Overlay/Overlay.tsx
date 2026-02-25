@@ -37,6 +37,7 @@ const Topper = () => {
 const Palette = () => {
   return (
     <div className={styles.blocks}>
+      <DraggableBlock type="StartNode" />
       <DraggableBlock type="VariableDeclaration" />
       <DraggableBlock type="Assignment" />
       <DraggableBlock type="Print" />
