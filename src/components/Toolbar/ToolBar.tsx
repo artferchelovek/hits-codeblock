@@ -4,14 +4,17 @@ import { useBlockContext } from "../../context/BlockContext.tsx";
 import SvgDownload from "../../svg/SvgDownload.tsx";
 import SvgUpload from "../../svg/SvgUpload.tsx";
 import downloadProgram from "../../logic/downloadProgram.ts";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { uploadProgram } from "../../logic/uploadProgram.ts";
 
 export default function ToolBar() {
-  const { removeProgram, getProgram, refreshProgram, program } =
-    useBlockContext();
-
-  const [programName, setProgramName] = useState(program.name);
+  const {
+    removeProgram,
+    getProgram,
+    refreshProgram,
+    program,
+    updateProgramName,
+  } = useBlockContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -22,7 +25,6 @@ export default function ToolBar() {
     try {
       const data = await uploadProgram(file);
       refreshProgram(data);
-      setProgramName(data.name);
       event.target.value = "";
     } catch (e) {
       console.error(e);
@@ -40,8 +42,8 @@ export default function ToolBar() {
 
       <div className={styles.fileName}>
         <input
-          value={programName}
-          onChange={(e) => setProgramName(e.target.value)}
+          value={program.name}
+          onChange={(e) => updateProgramName(e.target.value)}
           className={styles.fieldFileName}
           type="text"
         />
@@ -53,7 +55,7 @@ export default function ToolBar() {
         <SvgUpload fill={"rgb(7 75 114)"} />
       </div>
       <div
-        onClick={() => downloadProgram(getProgram(), programName)}
+        onClick={() => downloadProgram(getProgram())}
         className={styles.elem}
       >
         <SvgDownload fill={"rgb(7 75 114)"} />

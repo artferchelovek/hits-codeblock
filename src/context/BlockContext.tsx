@@ -12,7 +12,7 @@ interface BlockContextType {
   removeProgram: () => void;
   getProgram: () => ProgramNode;
   refreshProgram: (newProgram: ProgramNode) => void;
-  updateProgramName: (programName: string) => ProgramNode;
+  updateProgramName: (programName: string) => void;
 }
 
 const BlockContext = createContext<BlockContextType | null>(null);
@@ -90,10 +90,10 @@ export const BlockContextProvider = ({
   };
 
   const updateProgramName = (programName: string) => {
-    return {
-      ...program,
-      name: programNam,
-    };
+    setProgram((prev) => ({
+      ...prev,
+      name: programName,
+    }));
   };
 
   return (
