@@ -258,10 +258,10 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
                     lines.push(
                       <ConnectionLine
                         key={`${node.id}-true`}
-                        startX={start.x}
-                        startY={start.y}
-                        endX={end.x}
-                        endY={end.y}
+                        startX={start.x - pan.x}
+                        startY={start.y - pan.y}
+                        endX={end.x - pan.x}
+                        endY={end.y - pan.y}
                         color="green"
                       />,
                     );
@@ -281,10 +281,10 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
                     lines.push(
                       <ConnectionLine
                         key={`${node.id}-false`}
-                        startX={start.x}
-                        startY={start.y}
-                        endX={end.x}
-                        endY={end.y}
+                        startX={start.x - pan.x}
+                        startY={start.y - pan.y}
+                        endX={end.x - pan.x}
+                        endY={end.y - pan.y}
                         color="red"
                       />,
                     );

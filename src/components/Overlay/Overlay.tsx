@@ -41,6 +41,7 @@ const Palette = () => {
       <DraggableBlock type="Assignment" />
       <DraggableBlock type="Print" />
       <DraggableBlock type={"If"} />
+      <DraggableBlock type={"For"} />
     </div>
   );
 };

@@ -30,15 +30,15 @@ export interface AssignmentNode extends BaseNodeAttributes {
 
 export interface ForNode extends BaseNodeAttributes {
   type: "For";
-  iterator: string;
+  iterator: ExpressionNode;
   from: ExpressionNode;
   to: ExpressionNode;
-  body: string | null;
+  bodyId: string | null;
 }
 
 export interface IfNode extends BaseNodeAttributes {
   type: "If";
-  condition: ExpressionNode;
+  condition: BinaryExpressionNode;
   trueId: string | null;
   falseId: string | null;
 }
@@ -51,6 +51,7 @@ export interface PrintNode extends BaseNodeAttributes {
 export type ExpressionNode =
   | LiteralNode
   | IdentifierNode
+  | StringNode
   | BinaryExpressionNode;
 
 export interface LiteralNode {
@@ -61,6 +62,11 @@ export interface LiteralNode {
 export interface IdentifierNode {
   type: "Identifier";
   name: string;
+}
+
+export interface StringNode {
+  type: "String";
+  value: string;
 }
 
 export interface BinaryExpressionNode {

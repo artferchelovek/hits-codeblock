@@ -1,94 +1,85 @@
 import type { IfNode } from "../../../types/ast.ts";
-import { useDraggable, useDroppable } from "@dnd-kit/core";
-import styles from "./Block.module.css";
+import TripleBlockLayout from "./TripleBlockLayout.tsx";
+import { useEffect, useState } from "react";
+import {
+  renderExpression,
+  stringToExpression,
+} from "../../../logic/expression.ts";
+import { useBlockContext } from "../../../context/BlockContext.tsx";
 
 export default function If({ node }: { node: IfNode }) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: node.id,
-    data: { type: "node" },
-  });
+  const { updateStatement } = useBlockContext();
 
-  const { setNodeRef: setInputRef } = useDroppable({
-    id: `input-${node.id}`,
-    data: { type: "input", nodeId: node.id },
-  });
+  const [operator, setOperator] = useState<">" | "<" | ">=" | "<=" | "==">(">");
+  const [leftCondition, setLeftCondition] = useState(
+    renderExpression(node.condition.left),
+  );
+  const [rightCondition, setRightCondition] = useState(
+    renderExpression(node.condition.right),
+  );
 
-  const {
-    attributes: outAttr1,
-    listeners: outListeners1,
-    setNodeRef: setOutRef1,
-  } = useDraggable({
-    id: `output1-${node.id}`,
-    data: { type: "output1", nodeId: node.id },
-  });
-  const {
-    attributes: outAttr,
-    listeners: outListeners,
-    setNodeRef: setOutRef,
-  } = useDraggable({
-    id: `output-${node.id}`,
-    data: { type: "output", nodeId: node.id },
-  });
-  const {
-    attributes: outAttr2,
-    listeners: outListeners2,
-    setNodeRef: setOutRef2,
-  } = useDraggable({
-    id: `output2-${node.id}`,
-    data: { type: "output2", nodeId: node.id },
-  });
+  useEffect(() => {
+    setLeftCondition(renderExpression(node.condition.left));
+  }, [node.condition.left]);
+  useEffect(() => {
+    setRightCondition(renderExpression(node.condition.right));
+  }, [node.condition.right]);
 
   return (
-    <div
-      ref={setNodeRef}
-      {...attributes}
-      className={styles.block}
-      style={{
-        position: "absolute",
-        left: node.x,
-        top: node.y,
-        transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-          : undefined,
-      }}
-    >
-      <div
-        ref={setInputRef}
-        id={`input-${node.id}`}
-        className={styles.inputConnector}
+    <TripleBlockLayout node={node}>
+      <input
+        value={leftCondition}
+        type="text"
+        onChange={(e) => {
+          const value = e.target.value;
+          setLeftCondition(value);
+          try {
+            const parsed = stringToExpression(value);
+
+            updateStatement(node.id, (n) => {
+              if (n.type !== "If") return n;
+
+              return {
+                ...n,
+                condition: {
+                  ...n.condition,
+                  left: parsed,
+                },
+              };
+            });
+          } catch {}
+        }}
       />
+      <select value={operator} onChange={(e) => setOperator(e.target.value)}>
+        <option value=">">&gt;</option>
+        <option value="<"> &lt;</option>
+        <option value=">=">&ge;</option>
+        <option value="<=">&le;</option>
+        <option value="==">=</option>
+      </select>
+      <input
+        value={rightCondition}
+        onChange={(e) => {
+          const value = e.target.value;
+          setRightCondition(value);
+          try {
+            const parsed = stringToExpression(value);
 
-      <div className={styles.label}>
-        <p className={styles.labelP}>{node.type}</p>
-        <p {...listeners}>☰</p>
-      </div>
+            updateStatement(node.id, (n) => {
+              if (n.type !== "If") return n;
 
-      <div className={styles.content}></div>
-
-      <div className={styles.outputConnectors}>
-        <div
-          id={`out-true-${node.id}`}
-          ref={setOutRef1}
-          {...outListeners1}
-          {...outAttr1}
-          className={styles.output}
-          title="True"
-        />
-        <div
-          id={`out-${node.id}`}
-          ref={setOutRef}
-          {...outListeners}
-          {...outAttr}
-          className={styles.output}
-        />
-        <div
-          id={`out-false-${node.id}`}
-          ref={setOutRef2}
-          {...outListeners2}
-          {...outAttr2}
-          className={styles.output}
-        />
-      </div>
-    </div>
+              return {
+                ...n,
+                condition: {
+                  ...n.condition,
+                  right: parsed,
+                },
+              };
+            });
+          } catch {}
+        }}
+        type="text"
+      />
+    </TripleBlockLayout>
   );
 }
