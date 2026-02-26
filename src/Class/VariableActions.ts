@@ -1,5 +1,11 @@
-import type { ExpressionNode, StatementNode } from "../types/ast.ts";
+import type {
+  ExpressionNode,
+  StatementNode,
+  VariableForDebug,
+} from "../types/ast.ts";
+import { Calculate } from "../logic/expressionCount.ts";
 
+// @ts-ignore
 export class VariableActions {
   private variableData = new Map<string, ExpressionNode>();
 
@@ -41,7 +47,15 @@ export class VariableActions {
     }
   }
 
-  public getAll(): Map<string, ExpressionNode> {
-    return new Map<string, ExpressionNode>(this.variableData);
+  public getAll(): VariableForDebug[] {
+    const variables: VariableForDebug[] = [];
+    this.variableData.forEach((value, name) => {
+      variables.push({ type: "VariableForDebug", name: name, value: value });
+    });
+    return variables;
+  }
+
+  public getMap() {
+    return new Map<string, ExpressionNode[]>(this.variableData);
   }
 }
