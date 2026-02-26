@@ -1,7 +1,16 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
+import type { ExpressionNode } from "../types/ast.ts";
+
+export interface Compilator {
+  isRunning: boolean;
+  printable: ExpressionNode[];
+}
 
 interface CompileContextType {
-  updateStatus: (status: boolean) => void;
+  compilator: Compilator;
+  updateStatus: () => void;
+  addPrintable: (node: ExpressionNode) => void;
+  clearPrintable: () => void;
 }
 
 const CompileContext = createContext<CompileContextType | null>(null);
@@ -19,14 +28,34 @@ export const CompileContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const updateStatus = (status: boolean) => {
-    return status;
+  const [compilator, setCompilator] = useState<Compilator>({
+    isRunning: false,
+    printable: [],
+  });
+
+  const clearPrintable = () => (compilator.printable = []);
+
+  const updateStatus = () => {
+    setCompilator((prev) => ({
+      ...prev,
+      isRunning: !compilator.isRunning,
+    }));
+  };
+
+  const addPrintable = (node: ExpressionNode) => {
+    setCompilator((prev) => ({
+      ...prev,
+      printable: [...prev.printable, nod],
+    }));
   };
 
   return (
     <CompileContext.Provider
       value={{
+        compilator,
         updateStatus,
+        addPrintable,
+        clearPrintable,
       }}
     >
       {children}
