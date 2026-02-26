@@ -42,10 +42,10 @@ export const CompileContextProvider = ({
     }));
   };
 
-  const addPrintable = (node: ExpressionNode) => {
+  const addPrintable = (nodes: ExpressionNode) => {
     setCompilator((prev) => ({
       ...prev,
-      printable: [...prev.printable, nod],
+      printable: [...prev.printable, nodes],
     }));
   };
 
