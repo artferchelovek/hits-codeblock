@@ -2,9 +2,9 @@ import { DndContext, useDroppable } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext";
 import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
-import type { IfNode } from "../../types/ast.ts";
+import type { ForNode, IfNode } from "../../types/ast.ts";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";
 import { createNode } from "../../logic/nodeFactory.ts";
 
@@ -56,6 +56,10 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
           if ((node as IfNode).falseId === targetId)
             (newNode as any).falseId = null;
         }
+        if (node.type === "For") {
+          if ((node as ForNode).bodyId === targetId)
+            (newNode as any).bodyId = null;
+        }
         return newNode;
       });
     });
@@ -64,6 +68,9 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
       if (node.type === "If") {
         if (connectionType === "output1") return { ...node, trueId: targetId };
         if (connectionType === "output2") return { ...node, falseId: targetId };
+      }
+      if (node.type === "For") {
+        if (connectionType === "output1") return { ...node, bodyId: targetId };
       }
       return { ...node, nextId: targetId };
     });
@@ -89,8 +96,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
       const type = active.data.current?.type;
       if (type) {
         const newNode = createNode(type);
-        newNode.x = 100 + delta.x - pan.x;
-        newNode.y = 100 + delta.y - pan.y;
+        newNode.x = delta.x - pan.x;
+        newNode.y = delta.y - pan.y;
         addStatement(null, newNode);
       }
     }
@@ -239,6 +246,33 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
                       endY={end.y - pan.y}
                     />,
                   );
+                }
+              }
+
+              if (node.type === "For") {
+                const forNode = node as ForNode;
+
+                if (forNode.bodyId) {
+                  const start = getConnectorPos(
+                    `out-true-${node.id}`,
+                    containerRef,
+                  );
+                  const end = getConnectorPos(
+                    `input-${forNode.bodyId}`,
+                    containerRef,
+                  );
+                  if (start && end) {
+                    lines.push(
+                      <ConnectionLine
+                        key={`${node.id}-true`}
+                        startX={start.x - pan.x}
+                        startY={start.y - pan.y}
+                        endX={end.x - pan.x}
+                        endY={end.y - pan.y}
+                        color="green"
+                      />,
+                    );
+                  }
                 }
               }
 

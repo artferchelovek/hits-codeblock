@@ -1,3 +1,5 @@
+import React from "react";
+
 export const getConnectorPos = (
   elementId: string,
   containerRef: React.RefObject<HTMLDivElement | null>,

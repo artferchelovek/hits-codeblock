@@ -5,6 +5,7 @@ import { DndContext } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext";
 import { createNode } from "../../logic/nodeFactory";
 import { useState } from "react";
+import ToolBar from "../../components/Toolbar/ToolBar.tsx";
 
 export default function App() {
   const { addStatement } = useBlockContext();
@@ -31,6 +32,7 @@ export default function App() {
     <DndContext onDragEnd={dragEnd}>
       <Overlay />
       <EditorSpace setPanMain={setPanMain} />
+      <ToolBar />
     </DndContext>
   );
 }

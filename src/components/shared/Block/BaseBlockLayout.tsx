@@ -1,6 +1,7 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import styles from "./Block.module.css";
 import type { ReactNode } from "react";
+import { useBlockContext } from "../../../context/BlockContext.tsx";
 
 type Props = {
   node: {
@@ -13,6 +14,8 @@ type Props = {
 };
 
 export default function BaseBlockLayout({ node, children }: Props) {
+  const { removeStatement } = useBlockContext();
+
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
     data: { type: "node" },
@@ -46,14 +49,26 @@ export default function BaseBlockLayout({ node, children }: Props) {
           : undefined,
       }}
     >
-      <div
-        ref={setInputRef}
-        id={`input-${node.id}`}
-        className={styles.inputConnector}
-      />
+      {node.type !== "StartNode" && (
+        <div
+          ref={setInputRef}
+          id={`input-${node.id}`}
+          className={styles.inputConnector}
+        />
+      )}
 
       <div className={styles.label}>
-        <p className={styles.labelP}>{node.type}</p>
+        <div className={styles.labelFlex}>
+          <div
+            onClick={() => {
+              removeStatement(node.id);
+            }}
+            className={styles.buttonDelete}
+          >
+            -
+          </div>
+          <p className={styles.labelP}>{node.type}</p>
+        </div>
         <p {...listeners}>☰</p>
       </div>
 

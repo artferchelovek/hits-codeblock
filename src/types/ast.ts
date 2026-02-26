@@ -1,4 +1,5 @@
 export interface ProgramNode {
+  name: string;
   type: "Program";
   body: StatementNode[];
 }
@@ -30,8 +31,9 @@ export interface VariableDeclarationNode extends BaseNodeAttributes {
 
 export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
-  target: string; // ima peremennoi
+  target: string | MemberExpressionNode; // ima peremennoi
   value: ExpressionNode;
+  method?: string;
 }
 
 export interface ForNode extends BaseNodeAttributes {
@@ -58,11 +60,24 @@ export type ExpressionNode =
   | LiteralNode
   | IdentifierNode
   | StringNode
-  | BinaryExpressionNode;
+  | BinaryExpressionNode
+  | ArrayNode
+  | MemberExpressionNode;
 
 export interface LiteralNode {
   type: "Literal";
   value: number;
+}
+
+export interface ArrayNode {
+  type: "Array";
+  value: ExpressionNode[];
+}
+
+export interface MemberExpressionNode {
+  type: "MemberExpression";
+  object: ExpressionNode;
+  index: ExpressionNode;
 }
 
 export interface IdentifierNode {
