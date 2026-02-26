@@ -96,3 +96,9 @@ export interface BinaryExpressionNode {
   left: ExpressionNode;
   right: ExpressionNode;
 }
+
+export interface VariableForDebug {
+  type: "VariableForDebug";
+  name: string;
+  value: ExpressionNode;
+}
