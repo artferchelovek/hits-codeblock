@@ -1,4 +1,4 @@
-import type { ExpressionNode } from "../types/ast.ts";
+import type { ExpressionNode, StatementNode } from "../types/ast.ts";
 
 export class VariableActions {
   private variableData = new Map<string, ExpressionNode>();
@@ -18,6 +18,7 @@ export class VariableActions {
     } else {
       this.variableData.set(variableName, { type: "Literal", value: 0 });
     }
+
     return;
   }
 
@@ -38,5 +39,9 @@ export class VariableActions {
     } else {
       throw new Error("Variable is not defined");
     }
+  }
+
+  public getAll(): Map<string, ExpressionNode> {
+    return new Map<string, ExpressionNode>(this.variableData);
   }
 }
