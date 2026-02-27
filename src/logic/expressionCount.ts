@@ -1,42 +1,67 @@
 import type { ExpressionNode, LiteralNode, StringNode } from "../types/ast.ts";
-import type { VariableActions } from "../Class/VariableActions.ts";
 
-function add(first_exp: any, last_exp: any): number | string | boolean {
-  if (typeof first_exp === typeof last_exp) {
+type CorrectExpression = string | number;
+function add(
+  first_exp: CorrectExpression,
+  last_exp: CorrectExpression,
+): number | string {
+  if (typeof last_exp === "number" && typeof first_exp === "number") {
+    return last_exp + first_exp;
+  } else if (last_exp === "string" && typeof first_exp === "string") {
     return first_exp + last_exp;
-  } else {
-    return "error";
   }
+
+  throw new Error(`Cannot add ${typeof first_exp} + ${typeof last_exp}`);
 }
 
-function subtract(first_exp: any, last_exp: any): number | string | boolean {
-  if (typeof first_exp === typeof last_exp && typeof last_exp === "number") {
+function subtract(
+  first_exp: CorrectExpression,
+  last_exp: CorrectExpression,
+): number | string {
+  if (typeof last_exp === "number" && typeof first_exp === "number") {
     return first_exp - last_exp;
-  } else {
-    return "error";
   }
+
+  throw new Error(`Cannot subtract ${typeof first_exp} + ${typeof last_exp}`);
 }
 
-function multiply(first_exp: any, last_exp: any): number | string | boolean {
-  if (typeof first_exp === typeof last_exp && typeof last_exp === "number") {
+function multiply(
+  first_exp: CorrectExpression,
+  last_exp: CorrectExpression,
+): number | string {
+  if (typeof last_exp === "number" && typeof first_exp === "number") {
     return first_exp * last_exp;
-  } else {
-    return "error";
   }
+  throw new Error(`Cannot add ${typeof first_exp} + ${typeof last_exp}`);
 }
 
-function modulo(a: any, b: any): number | string {
-  if (Number(b) === 0) {
-    return "error";
+function modulo(
+  first_exp: CorrectExpression,
+  last_exp: CorrectExpression,
+): number | string {
+  if (Number(last_exp) === 0) {
+    throw new Error(`Division by zero`);
   }
-  return Number(a) % Number(b);
+  if (typeof last_exp === "number" && typeof first_exp === "number") {
+    return Number(first_exp) % Number(last_exp);
+  }
+
+  throw new Error(`Cannot modulo ${typeof first_exp} + ${typeof last_exp}`);
 }
 
-function divide(a: any, b: any): number | string {
-  if (Number(b) === 0) {
-    return "error";
+function divide(
+  first_exp: CorrectExpression,
+  last_exp: CorrectExpression,
+): number | string {
+  if (Number(last_exp) === 0) {
+    throw new Error(`Division by zero`);
   }
-  return Number(a) / Number(b);
+
+  if (typeof last_exp === "number" && typeof first_exp === "number") {
+    return Number(first_exp) / Number(last_exp);
+  }
+
+  throw new Error(`Cannot divide ${typeof first_exp} + ${typeof last_exp}`);
 }
 
 export function Calculate(
