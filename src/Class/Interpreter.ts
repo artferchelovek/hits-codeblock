@@ -53,7 +53,7 @@ export class Interpreter {
           type: temp.type,
           id: temp.id,
           variableAll: this.variableData.getAll(),
-          print: Calculate(temp.expression, this.variableData.getAll()),
+          print: Calculate(temp.expression, this.variableData.getMap()),
         };
       } else {
         yield {
@@ -98,14 +98,6 @@ export class Interpreter {
       this.variableData.addVariable(node.name);
     } catch (e) {
       throw new Error(`Unable to declare assignment: `); //???
-    }
-  }
-
-  private getByiId(node: StatementNode): StatementNode | undefined {
-    if (node.nextId && this.nodeMap.has(node.nextId)) {
-      return this.nodeMap.get(node.nextId);
-    } else {
-      return node;
     }
   }
 }
@@ -172,8 +164,8 @@ const inter = new Interpreter({
           name: "a",
         },
         right: {
-          type: "Literal",
-          value: 1,
+          type: "String",
+          value: "1",
         },
       },
       x: 2834.484375,
@@ -182,7 +174,6 @@ const inter = new Interpreter({
     },
   ],
 }).interpreter();
-
 console.log(inter.next());
 console.log(inter.next());
 console.log(inter.next());

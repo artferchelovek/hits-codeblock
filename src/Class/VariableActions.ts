@@ -56,6 +56,6 @@ export class VariableActions {
   }
 
   public getMap() {
-    return new Map<string, ExpressionNode[]>(this.variableData);
+    return new Map<string, ExpressionNode>(this.variableData);
   }
 }
