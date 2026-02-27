@@ -1,4 +1,5 @@
 import type { ExpressionNode, LiteralNode, StringNode } from "../types/ast.ts";
+import type { VariableActions } from "../Class/VariableActions.ts";
 
 type CorrectExpression = string | number;
 function add(
@@ -66,14 +67,25 @@ function divide(
 
 export function Calculate(
   expression: ExpressionNode,
-  variableData: Map<string, ExpressionNode>,
+  variableData: VariableActions,
 ): LiteralNode | StringNode {
   if (expression.type === "Literal") return expression;
   if (expression.type === "String") return expression;
   if (expression.type === "Identifier") {
-    const variable = variableData.get(expression.name);
+    const variable = variableData.getVariableByName(expression.name);
     if (variable?.type === "Literal" || variable?.type === "String") {
       return variable;
+    }
+  }
+  if (expression.type === "MemberExpression") {
+    const index = expression.index;
+
+    if (expression.object.type === "Identifier") {
+      const name = expression.object.name;
+      const variable = variableData.getVariableByName(name, index);
+      if (variable) {
+        Calculate(variable, variableData);
+      }
     }
   }
   if (expression.type === "BinaryExpression") {

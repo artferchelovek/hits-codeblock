@@ -1,11 +1,10 @@
 import type {
+  ArrayNode,
   ExpressionNode,
-  StatementNode,
   VariableForDebug,
 } from "../types/ast.ts";
 import { Calculate } from "../logic/expressionCount.ts";
 
-// @ts-ignore
 export class VariableActions {
   private variableData = new Map<string, ExpressionNode>();
 
@@ -16,6 +15,14 @@ export class VariableActions {
     variableValue?: ExpressionNode,
   ): void {
     if (variableValue) {
+      if (variableValue.type === "Array") {
+        variableValue = {
+          type: "Array",
+          value: variableValue.value.map((item) => Calculate(item, this)),
+        };
+        this.variableData.set(variableName, variableValue);
+        return;
+      }
       if (this.variableData.has(variableName)) {
         this.variableData.set(variableName, variableValue);
       } else {
@@ -39,9 +46,28 @@ export class VariableActions {
     }
   }
 
-  public getVariableByName(variableName: string): ExpressionNode | undefined {
+  public getVariableByName(
+    variableName: string,
+    index?: ExpressionNode,
+  ): ExpressionNode | undefined {
     if (this.variableData.has(variableName)) {
-      return this.variableData.get(variableName);
+      const variable = this.variableData.get(variableName);
+      if (index) {
+        const indexValue = Calculate(index, this).value;
+
+        if (typeof indexValue !== "number") {
+          throw new Error(`Indices must be number`);
+        }
+        if (variable?.type !== "Array") {
+          throw new Error(`Variable ${variableName} does not array`);
+        }
+        if (!(indexValue >= 0 && indexValue < variable.value.length)) {
+          throw new Error(`Array index out of bounds`);
+        }
+
+        return variable.value[indexValue];
+      }
+      return variable;
     } else {
       throw new Error("Variable is not defined");
     }
