@@ -24,7 +24,7 @@ export class VariableActions {
         return;
       }
       if (this.variableData.has(variableName)) {
-        this.variableData.set(variableName, variableValue);
+        this.variableData.set(variableName, Calculate(variableValue, this));
       } else {
         throw new Error(`Declare the variable ${variableName}`);
       }
@@ -38,8 +38,17 @@ export class VariableActions {
   public changeVariable(
     variableName: string,
     variableValue: ExpressionNode,
+    index?: ExpressionNode,
   ): void {
+    const variable = this.variableData.get(variableName);
     if (this.variableData.has(variableName)) {
+      if (index && variable && variable.type === "Array") {
+        const indexValue = this.checkAndGetIndex(index, variableName);
+        const array = variable as ArrayNode;
+        array.value[indexValue] = variableValue;
+        return;
+      }
+
       this.variableData.set(variableName, variableValue);
     } else {
       throw new Error("Variable is not defined");
@@ -52,21 +61,15 @@ export class VariableActions {
   ): ExpressionNode | undefined {
     if (this.variableData.has(variableName)) {
       const variable = this.variableData.get(variableName);
+
       if (index) {
-        const indexValue = Calculate(index, this).value;
-
-        if (typeof indexValue !== "number") {
-          throw new Error(`Indices must be number`);
+        const indexValue = this.checkAndGetIndex(index, variableName);
+        if (variable?.type === "Array" && variable) {
+          const array = variable as ArrayNode;
+          return array.value[indexValue];
         }
-        if (variable?.type !== "Array") {
-          throw new Error(`Variable ${variableName} does not array`);
-        }
-        if (!(indexValue >= 0 && indexValue < variable.value.length)) {
-          throw new Error(`Array index out of bounds`);
-        }
-
-        return variable.value[indexValue];
       }
+
       return variable;
     } else {
       throw new Error("Variable is not defined");
@@ -83,5 +86,24 @@ export class VariableActions {
 
   public getMap() {
     return new Map<string, ExpressionNode>(this.variableData);
+  }
+
+  private checkAndGetIndex(
+    index: ExpressionNode,
+    variableName: string,
+  ): number {
+    const variable = this.variableData.get(variableName);
+    const indexValue = Calculate(index, this).value;
+
+    if (typeof indexValue !== "number") {
+      throw new Error(`Indices must be number`);
+    }
+    if (variable?.type !== "Array") {
+      throw new Error(`Variable ${variableName} does not array`);
+    }
+    if (!(indexValue >= 0 && indexValue < variable.value.length)) {
+      throw new Error(`Array index out of bounds`);
+    }
+    return indexValue;
   }
 }

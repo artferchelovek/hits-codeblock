@@ -1,8 +1,5 @@
 import type {
   AssignmentNode,
-  ExpressionNode,
-  ForNode,
-  PrintNode,
   ProgramNode,
   StatementNode,
   VariableDeclarationNode,
@@ -42,17 +39,10 @@ export class Interpreter {
 
       const temp = currentNode;
 
-      if (nextID === null) {
+      if (nextID === null || nextID === undefined) {
         currentNode = undefined;
       } else {
         currentNode = this.nodeMap.get(nextID);
-      }
-      if (temp.type === "Assignment") {
-        console.log(temp.value);
-        const d = this.variableData.getMap();
-        for (let i in d.values) {
-          console.log(i);
-        }
       }
 
       if (temp.type === "Print") {
@@ -72,7 +62,7 @@ export class Interpreter {
     }
   }
 
-  private actionsNode(node: StatementNode): string | null {
+  private actionsNode(node: StatementNode): string | undefined | null {
     switch (node.type) {
       case "Assignment":
         this.assignment(node);
@@ -94,15 +84,18 @@ export class Interpreter {
   }
 
   private assignment(node: AssignmentNode): void {
+    if (typeof node.target !== "string") {
+      const index = node.target.index;
+      const name =
+        node.target.object.type === "Identifier" ? node.target.object.name : "";
+      this.variableData.changeVariable(name, node.value, index);
+      return;
+    }
     if (node.value.type === "Array") {
       this.variableData.addVariable(node.target, node.value);
       return;
     }
-
-    this.variableData.addVariable(
-      node.target,
-      Calculate(node.value, this.variableData),
-    );
+    this.variableData.addVariable(node.target, node.value);
   }
 
   private declaration(node: VariableDeclarationNode): void {

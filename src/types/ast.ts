@@ -100,5 +100,5 @@ export interface BinaryExpressionNode {
 export interface VariableForDebug {
   type: "VariableForDebug";
   name: string;
-  value: ExpressionNode | ExpressionNode[];
+  value: ExpressionNode;
 }
