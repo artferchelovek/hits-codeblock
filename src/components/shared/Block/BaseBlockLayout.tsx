@@ -1,6 +1,6 @@
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import styles from "./Block.module.css";
-import type { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useBlockContext } from "../../../context/BlockContext.tsx";
 
 type Props = {
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function BaseBlockLayout({ node, children }: Props) {
-  const { removeStatement } = useBlockContext();
+  const { removeStatement, activeNode } = useBlockContext();
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
@@ -39,7 +39,7 @@ export default function BaseBlockLayout({ node, children }: Props) {
     <div
       ref={setNodeRef}
       {...attributes}
-      className={styles.block}
+      className={`${styles.block} ${activeNode === node.id ? styles.active : ""}`}
       style={{
         position: "absolute",
         left: node.x,
