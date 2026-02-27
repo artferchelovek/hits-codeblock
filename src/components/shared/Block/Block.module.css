@@ -11,6 +11,10 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+
+    &.active {
+        background: var(--md-sys-color-tertiary-container);
+    }
 }
 
 .label {

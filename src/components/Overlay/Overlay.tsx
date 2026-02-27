@@ -39,7 +39,7 @@ const Topper = ({
   addPrintable: (node: ExpressionNode) => void;
   clearPrintable: () => void;
 }) => {
-  const { program } = useBlockContext();
+  const { program, setActiveNode } = useBlockContext();
 
   const startProgram = () => {
     if (compilator) {
@@ -71,7 +71,9 @@ const Topper = ({
         const result = runtime.next();
         if (result.done) {
           clearInterval(timer);
+          setActiveNode(null);
         } else {
+          setActiveNode(result.value.id);
           if (result.value?.type === "Print") addPrintable(result.value.print);
         }
       }, 1000);
