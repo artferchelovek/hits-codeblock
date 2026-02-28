@@ -10,7 +10,7 @@ import { Calculate } from "../logic/expressionCount.ts";
 export class Interpreter {
   private variableData = new VariableActions();
   private blockData: ProgramNode;
-  private startNode: StatementNode | undefined;
+  readonly startNode: StatementNode | undefined;
 
   private nodeMap: Map<string, StatementNode> = new Map<
     string,
@@ -88,19 +88,22 @@ export class Interpreter {
       const index = node.target.index;
       const name =
         node.target.object.type === "Identifier" ? node.target.object.name : "";
+
       this.variableData.changeVariable(name, node.value, index);
       return;
     }
+
     if (node.value.type === "Array") {
-      this.variableData.addVariable(node.target, node.value);
+      this.variableData.changeVariable(node.target, node.value);
       return;
     }
-    this.variableData.addVariable(node.target, node.value);
+
+    this.variableData.changeVariable(node.target, node.value);
   }
 
   private declaration(node: VariableDeclarationNode): void {
     try {
-      this.variableData.addVariable(node.name);
+      this.variableData.declareVariable(node.name);
     } catch (e) {
       throw new Error(`Unable to declare assignment: `); //???
     }

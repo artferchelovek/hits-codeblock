@@ -10,29 +10,12 @@ export class VariableActions {
 
   public constructor() {}
 
-  public addVariable(
-    variableName: string,
-    variableValue?: ExpressionNode,
-  ): void {
-    if (variableValue) {
-      if (variableValue.type === "Array") {
-        variableValue = {
-          type: "Array",
-          value: variableValue.value.map((item) => Calculate(item, this)),
-        };
-        this.variableData.set(variableName, variableValue);
-        return;
-      }
-      if (this.variableData.has(variableName)) {
-        this.variableData.set(variableName, Calculate(variableValue, this));
-      } else {
-        throw new Error(`Declare the variable ${variableName}`);
-      }
-    } else {
-      this.variableData.set(variableName, { type: "Literal", value: 0 });
+  public declareVariable(variableName: string): void {
+    const variable = this.variableData.get(variableName);
+    if (variable) {
+      throw new Error("Variable already declared");
     }
-
-    return;
+    this.variableData.set(variableName, { type: "Literal", value: 0 });
   }
 
   public changeVariable(
@@ -41,15 +24,17 @@ export class VariableActions {
     index?: ExpressionNode,
   ): void {
     const variable = this.variableData.get(variableName);
-    if (this.variableData.has(variableName)) {
-      if (index && variable && variable.type === "Array") {
+
+    if (variable) {
+      if (index && variable?.type === "Array") {
         const indexValue = this.checkAndGetIndex(index, variableName);
         const array = variable as ArrayNode;
-        array.value[indexValue] = variableValue;
+
+        array.value[indexValue] = Calculate(variableValue, this);
         return;
       }
 
-      this.variableData.set(variableName, variableValue);
+      this.variableData.set(variableName, this.countExpression(variableValue));
     } else {
       throw new Error("Variable is not defined");
     }
@@ -64,6 +49,7 @@ export class VariableActions {
 
       if (index) {
         const indexValue = this.checkAndGetIndex(index, variableName);
+
         if (variable?.type === "Array" && variable) {
           const array = variable as ArrayNode;
           return array.value[indexValue];
@@ -105,5 +91,15 @@ export class VariableActions {
       throw new Error(`Array index out of bounds`);
     }
     return indexValue;
+  }
+
+  private countExpression(node: ExpressionNode): ExpressionNode {
+    if (node.type === "Array") {
+      return {
+        type: "Array",
+        value: node.value.map((item) => Calculate(item, this)),
+      };
+    }
+    return Calculate(node, this);
   }
 }

@@ -2,6 +2,7 @@ import type { ExpressionNode, LiteralNode, StringNode } from "../types/ast.ts";
 import type { VariableActions } from "../Class/VariableActions.ts";
 
 type CorrectExpression = string | number;
+
 function add(
   first_exp: CorrectExpression,
   last_exp: CorrectExpression,
@@ -70,13 +71,16 @@ export function Calculate(
   variableData: VariableActions,
 ): LiteralNode | StringNode {
   if (expression.type === "Literal") return expression;
+
   if (expression.type === "String") return expression;
+
   if (expression.type === "Identifier") {
     const variable = variableData.getVariableByName(expression.name);
     if (variable?.type === "Literal" || variable?.type === "String") {
       return variable;
     }
   }
+
   if (expression.type === "MemberExpression") {
     const index = expression.index;
 
@@ -88,9 +92,11 @@ export function Calculate(
       }
     }
   }
+
   if (expression.type === "BinaryExpression") {
     const left_value = Calculate(expression.left, variableData).value;
     const right_value = Calculate(expression.right, variableData).value;
+
     let result;
 
     switch (expression.operator) {
@@ -125,5 +131,6 @@ export function Calculate(
       };
     }
   }
+
   throw new Error("Unrecognized expression");
 }
