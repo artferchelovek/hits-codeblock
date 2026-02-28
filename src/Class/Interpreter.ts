@@ -46,11 +46,15 @@ export class Interpreter {
       }
 
       if (temp.type === "Print") {
+        const print =
+          temp.expression.type === "Identifier"
+            ? this.variableData.getVariableByName(temp.expression.name)
+            : Calculate(temp.expression, this.variableData);
         yield {
           type: temp.type,
           id: temp.id,
           variableAll: this.variableData.getAll(),
-          print: Calculate(temp.expression, this.variableData),
+          print: print,
         };
       } else {
         yield {

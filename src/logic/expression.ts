@@ -13,45 +13,6 @@ export function stringToExpression(expression: string): ExpressionNode {
     };
   }
 
-  if (current.startsWith("[") && current.endsWith("]")) {
-    const elements: ExpressionNode[] = [];
-    current
-      .slice(1, -1)
-      .split(",")
-      .forEach((elem) => {
-        elements.push(stringToExpression(elem));
-      });
-    return {
-      type: "Array",
-      value: elements,
-    };
-  }
-
-  if (current.endsWith("]")) {
-    let depth = 0;
-    let bracketIndex = -1;
-
-    for (let i = current.length - 1; i >= 0; i--) {
-      if (current[i] === "]") depth++;
-      if (current[i] === "[") depth--;
-      if (depth === 0) {
-        bracketIndex = i;
-        break;
-      }
-    }
-
-    if (bracketIndex > 0) {
-      const objectPart = current.slice(0, bracketIndex).trim();
-      const propertyPart = current.slice(bracketIndex + 1, -1).trim();
-
-      return {
-        type: "MemberExpression",
-        object: stringToExpression(objectPart),
-        index: stringToExpression(propertyPart),
-      };
-    }
-  }
-
   if (current[0] === "(" && current[current.length - 1] === ")") {
     let depth = 0;
     let isWrapped = true;
@@ -135,7 +96,49 @@ export function stringToExpression(expression: string): ExpressionNode {
       ),
     };
   }
+  if (current.endsWith("]")) {
+    let depth = 0;
+    let bracketIndex = -1;
 
+    for (let i = current.length - 1; i >= 0; i--) {
+      if (current[i] === "]") depth++;
+      if (current[i] === "[") depth--;
+      if (depth === 0) {
+        bracketIndex = i;
+        break;
+      }
+    }
+    if (current.startsWith("[") && current.endsWith("]")) {
+      const elements: ExpressionNode[] = [];
+
+      current
+
+        .slice(1, -1)
+
+        .split(",")
+
+        .forEach((elem) => {
+          elements.push(stringToExpression(elem));
+        });
+
+      return {
+        type: "Array",
+
+        value: elements,
+      };
+    }
+
+    if (bracketIndex > 0) {
+      const objectPart = current.slice(0, bracketIndex).trim();
+      const propertyPart = current.slice(bracketIndex + 1, -1).trim();
+
+      return {
+        type: "MemberExpression",
+        object: stringToExpression(objectPart),
+        index: stringToExpression(propertyPart),
+      };
+    }
+  }
   const regNumber = /^-?\d+(\.\d+)?$/;
   const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
 
