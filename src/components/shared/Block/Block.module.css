@@ -1,0 +1,121 @@
+.block {
+    position: absolute;
+    z-index: 2;
+
+    width: 300px;
+    height: 75px;
+    padding: 8px;
+    background: var(--md-sys-color-secondary-container);
+    box-shadow: var(--md-sys-elevation);
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.labelFlex {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.labelP {
+    color: var(--md-sys-color-on-secondary-container);
+    font: var(--md-sys-text-title-medium)
+}
+
+input {
+    padding: 5px 10px;
+    font: var(--md-sys-text-body-medium);
+    border-radius: 10px;
+    border: none;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.content {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.inputConnector {
+    position: absolute;
+    top: 4px;
+    left: -6px;
+    width: 12px;
+    height: 12px;
+    background: var(--md-sys-color-primary);
+    border-radius: 50%;
+}
+
+.inputConnector:hover {
+    transform: scale(120%);
+    transition: 150ms;
+}
+
+.outputConnectors {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    right: -6px;
+    bottom: 0;
+    position: absolute;
+    height: 100%;
+
+    .output {
+        background: var(--md-sys-color-error);
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        cursor: grab;
+    }
+}
+
+.outputConnector {
+    position: absolute;
+    bottom: 4px;
+    right: -6px;
+    width: 12px;
+    height: 12px;
+    background: var(--md-sys-color-error);
+    border-radius: 50%;
+    cursor: grab;
+}
+
+.outputConnector:hover {
+    transform: scale(120%);
+    transition: 150ms;
+}
+
+select {
+    padding: 5px 10px;
+    font: var(--md-sys-text-body-medium);
+    border-radius: 10px;
+    border: none;
+}
+
+.buttonDelete {
+    z-index: 3;
+    cursor: pointer;
+
+    background: var(--md-sys-color-secondary);
+    color: var(--md-sys-color-on-secondary);
+
+    border: none;
+    border-radius: 5px;
+    box-shadow: var(--md-sys-elevation);
+    font-size: var(--md-sys-text-body-medium);
+
+    height: fit-content;
+    padding: 0 10px;
+    backdrop-filter: blur(20px);
+}
