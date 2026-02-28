@@ -176,6 +176,23 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
     setIsPanning(false);
   }
 
+  const handleWheel = (e: React.WheelEvent) => {
+    const dx = e.deltaX;
+    const dy = e.deltaY;
+
+    setPan((prev) => ({
+      x: prev.x - dx,
+      y: prev.y - dy,
+    }));
+
+    if (setPanMain) {
+      setPanMain((prev) => ({
+        x: prev.x - dx,
+        y: prev.y - dy,
+      }));
+    }
+  };
+
   return (
     <DndContext
       onDragEnd={dragEnd}
@@ -188,6 +205,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
         id="editor"
         style={{
           width: "100vw",
@@ -203,6 +221,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
             width: "5000px",
             height: "5000px",
             pointerEvents: "none",
+            touchAction: "none",
           }}
         >
           <svg

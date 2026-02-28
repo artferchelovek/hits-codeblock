@@ -13,6 +13,8 @@ interface BlockContextType {
   getProgram: () => ProgramNode;
   refreshProgram: (newProgram: ProgramNode) => void;
   updateProgramName: (programName: string) => void;
+  activeNode: string | null;
+  setActiveNode: (node: string | null) => void;
 }
 
 const BlockContext = createContext<BlockContextType | null>(null);
@@ -33,6 +35,7 @@ export const BlockContextProvider = ({
     name: "NewProgram",
     body: [],
   });
+  const [activeNode, setActiveNode] = useState<string | null>(null);
 
   const addStatement = (parentId: string | null, node: StatementNode) => {
     console.log("addStatement", parentId, node);
@@ -107,6 +110,8 @@ export const BlockContextProvider = ({
         getProgram,
         refreshProgram,
         updateProgramName,
+        activeNode,
+        setActiveNode,
       }}
     >
       {children}
