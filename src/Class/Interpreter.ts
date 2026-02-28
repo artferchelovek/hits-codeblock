@@ -107,7 +107,10 @@ export class Interpreter {
 
   private declaration(node: VariableDeclarationNode): void {
     try {
-      this.variableData.declareVariable(node.name);
+      const names = node.name.split(",").map((item) => item.trim());
+      for (const name of names) {
+        this.variableData.declareVariable(name);
+      }
     } catch (e) {
       throw new Error(`Unable to declare assignment: `); //???
     }

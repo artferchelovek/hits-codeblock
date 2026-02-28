@@ -140,7 +140,8 @@ export function stringToExpression(expression: string): ExpressionNode {
     }
   }
   const regNumber = /^-?\d+(\.\d+)?$/;
-  const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
+  const regVariable =
+    /^([a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)(,[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)*$/;
 
   const trimmedCurrent = current.trim();
   if (regNumber.test(trimmedCurrent)) {
