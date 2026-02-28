@@ -88,7 +88,7 @@ export function Calculate(
       const name = expression.object.name;
       const variable = variableData.getVariableByName(name, index);
       if (variable) {
-        Calculate(variable, variableData);
+        return Calculate(variable, variableData);
       }
     }
   }
