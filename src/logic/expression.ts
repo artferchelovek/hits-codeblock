@@ -75,7 +75,7 @@ export function stringToExpression(expression: string): ExpressionNode {
         continue;
       }
 
-      if ("+-*/><%".includes(char)) {
+      if ("+-*/><%=".includes(char)) {
         const priority = getPriority(char);
         if (priority <= minPriority) {
           minPriority = priority;
@@ -161,6 +161,8 @@ export function stringToExpression(expression: string): ExpressionNode {
 
 function getPriority(operator: string): number {
   switch (operator) {
+    case "=":
+      return 0;
     case "==":
     case ">":
     case "<":
@@ -194,10 +196,12 @@ export function renderExpression(expr: ExpressionNode): string {
     case "Boolean":
       return String(expr.value);
 
-    case "BinaryExpression":
+    case "BinaryExpression": {
       const leftStr = renderExpression(expr.left);
       const rightStr = renderExpression(expr.right);
       return `${leftStr} ${expr.operator} ${rightStr}`;
+    }
+
     case "Array":
       return `[${expr.value.map((i) => renderExpression(i)).join(", ")}]`;
     case "MemberExpression":
