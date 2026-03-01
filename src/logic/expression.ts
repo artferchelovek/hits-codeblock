@@ -63,7 +63,7 @@ export function stringToExpression(expression: string): ExpressionNode {
 
     if (stack === 0) {
       const twoCharOp = current.substring(i, i + 2);
-      const ops2 = [">=", "<=", "=="];
+      const ops2 = [">=", "<=", "==", "!="];
       if (ops2.includes(twoCharOp)) {
         const priority = getPriority(twoCharOp);
         if (priority <= minPriority) {
@@ -142,8 +142,13 @@ export function stringToExpression(expression: string): ExpressionNode {
   const regNumber = /^-?\d+(\.\d+)?$/;
   const regVariable =
     /^([a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)(,[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)*$/;
+  const regBoolean = /^(?:true|false)$/;
 
   const trimmedCurrent = current.trim();
+
+  if (regBoolean.test(trimmedCurrent)) {
+    return { type: "Boolean", value: trimmedCurrent == "true" };
+  }
   if (regNumber.test(trimmedCurrent)) {
     return { type: "Literal", value: Number(trimmedCurrent) };
   }
@@ -161,6 +166,7 @@ function getPriority(operator: string): number {
     case "<":
     case ">=":
     case "<=":
+    case "!=":
       return 1;
     case "+":
     case "-":
@@ -185,6 +191,9 @@ export function renderExpression(expr: ExpressionNode): string {
     case "Identifier":
       return expr.name;
 
+    case "Boolean":
+      return String(expr.value);
+
     case "BinaryExpression":
       const leftStr = renderExpression(expr.left);
       const rightStr = renderExpression(expr.right);
@@ -198,3 +207,8 @@ export function renderExpression(expr: ExpressionNode): string {
       return "";
   }
 }
+
+const exp = "true";
+
+const d = stringToExpression(exp);
+console.log(d);

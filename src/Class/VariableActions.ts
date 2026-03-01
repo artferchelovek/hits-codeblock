@@ -27,7 +27,7 @@ export class VariableActions {
   public declareVariable(variableName: string): void {
     const variable = this.workScope().get(variableName);
     if (variable) {
-      throw new Error("Variable already declared");
+      return;
     }
     this.workScope().set(variableName, { type: "Literal", value: 0 });
   }
@@ -62,12 +62,12 @@ export class VariableActions {
   public getVariableByName(
     variableName: string,
     index?: ExpressionNode,
-  ): ExpressionNode | undefined {
+  ): ExpressionNode {
     for (let i = this.variableData.length - 1; i >= 0; i--) {
       if (this.variableData[i].has(variableName)) {
         const variable = this.variableData[i].get(variableName);
 
-        if (index) {
+        if (index && index.type === "Literal") {
           const indexValue = this.checkAndGetIndex(index, variableName);
 
           if (variable?.type === "Array" && variable) {
@@ -75,8 +75,9 @@ export class VariableActions {
             return array.value[indexValue];
           }
         }
-
-        return variable;
+        if (variable) {
+          return variable;
+        }
       }
     }
     throw new Error("Variable is not defined");

@@ -1,7 +1,11 @@
-import type { ExpressionNode, LiteralNode, StringNode } from "../types/ast.ts";
+import type {
+  BooleanNode,
+  ExpressionNode,
+  LiteralNode,
+  StringNode,
+} from "../types/ast.ts";
 import type { VariableActions } from "../Class/VariableActions.ts";
-
-type CorrectExpression = string | number;
+type CorrectExpression = string | number | boolean;
 
 function add(
   first_exp: CorrectExpression,
@@ -69,7 +73,7 @@ function divide(
 export function Calculate(
   expression: ExpressionNode,
   variableData: VariableActions,
-): LiteralNode | StringNode {
+): LiteralNode | StringNode | BooleanNode {
   if (expression.type === "Literal") return expression;
 
   if (expression.type === "String") return expression;
@@ -79,6 +83,9 @@ export function Calculate(
     if (variable?.type === "Literal" || variable?.type === "String") {
       return variable;
     }
+  }
+  if (expression.type === "Boolean") {
+    return expression;
   }
 
   if (expression.type === "MemberExpression") {
@@ -109,13 +116,30 @@ export function Calculate(
       case "*":
         result = multiply(left_value, right_value);
         break;
-
       case "%":
         result = modulo(left_value, right_value);
         break;
-
       case "/":
         result = divide(left_value, right_value);
+        break;
+
+      case "==":
+        result = left_value === right_value;
+        break;
+      case ">":
+        result = left_value > right_value;
+        break;
+      case "<":
+        result = left_value < right_value;
+        break;
+      case ">=":
+        result = left_value >= right_value;
+        break;
+      case "<=":
+        result = left_value <= right_value;
+        break;
+      case "!=":
+        result = left_value != right_value;
         break;
     }
 
@@ -127,6 +151,11 @@ export function Calculate(
     } else if (typeof result === "string") {
       return {
         type: "String",
+        value: result,
+      };
+    } else if (typeof result === "boolean") {
+      return {
+        type: "Boolean",
         value: result,
       };
     }
