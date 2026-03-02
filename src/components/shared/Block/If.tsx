@@ -52,15 +52,29 @@ export default function If({ node }: { node: IfNode }) {
       />
       <select
         value={operator}
-        onChange={(e) =>
-          setOperator(e.target.value as ">" | "<" | ">=" | "<=" | "==")
-        }
+        onChange={(e) => {
+          const newOperator = e.target.value as ">" | "<" | ">=" | "<=" | "==";
+          setOperator(newOperator);
+          try {
+            updateStatement(node.id, (n) => {
+              if (n.type !== "If") return n;
+
+              return {
+                ...n,
+                condition: {
+                  ...n.condition,
+                  operator: newOperator,
+                },
+              };
+            });
+          } catch {}
+        }}
       >
         <option value=">">&gt;</option>
-        <option value="<"> &lt;</option>
+        <option value="<">&lt;</option>
         <option value=">=">&ge;</option>
         <option value="<=">&le;</option>
-        <option value="==">=</option>
+        <option value="==">==</option>
       </select>
       <input
         value={rightCondition}

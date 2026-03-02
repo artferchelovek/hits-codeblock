@@ -1,6 +1,8 @@
 import type {
   AssignmentNode,
+  BooleanNode,
   ForNode,
+  IfNode,
   ProgramNode,
   StatementNode,
   VariableDeclarationNode,
@@ -145,6 +147,15 @@ export class Interpreter {
         continue;
       }
 
+      if (currentNode.type === "If") {
+        yield* this.ifNode(currentNode);
+
+        currentNode = currentNode.nextId
+          ? this.nodeMap.get(currentNode.nextId)
+          : undefined;
+        continue;
+      }
+
       this.actionsNode(currentNode);
 
       if (currentNode.type === "Print") {
@@ -171,5 +182,39 @@ export class Interpreter {
         ? this.nodeMap.get(currentNode.nextId)
         : undefined;
     }
+  }
+
+  private *ifNode(node: IfNode) {
+    this.variableData.newScope();
+
+    const trueId = node.trueId;
+    const falseId = node.falseId;
+    const condition = Calculate(
+      node.condition,
+      this.variableData,
+    ) as BooleanNode;
+
+    yield {
+      type: node.type,
+      id: node.id,
+      variableAll: this.variableData.getAll(),
+    };
+
+    if (condition.value) {
+      if (trueId) {
+        const nextActions = this.nodeMap.get(trueId);
+        if (nextActions) {
+          yield* this.action(nextActions);
+        }
+      }
+    } else {
+      if (falseId) {
+        const nextActions = this.nodeMap.get(falseId);
+        if (nextActions) {
+          yield* this.action(nextActions);
+        }
+      }
+    }
+    this.variableData.deleteScope();
   }
 }

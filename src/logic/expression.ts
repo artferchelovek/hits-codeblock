@@ -162,7 +162,7 @@ export function stringToExpression(expression: string): ExpressionNode {
 function getPriority(operator: string): number {
   switch (operator) {
     case "=":
-      return 0;
+      return -1;
     case "==":
     case ">":
     case "<":
@@ -211,8 +211,3 @@ export function renderExpression(expr: ExpressionNode): string {
       return "";
   }
 }
-
-const exp = "true";
-
-const d = stringToExpression(exp);
-console.log(d);
