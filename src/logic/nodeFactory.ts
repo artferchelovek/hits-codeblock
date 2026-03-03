@@ -20,7 +20,10 @@ export function createNode(type: string): StatementNode {
       return {
         id: generateId(),
         type: "Assignment",
-        target: "",
+        target: {
+          type: "Identifier",
+          name: "",
+        },
         value: {
           type: "Literal",
           value: 0,
