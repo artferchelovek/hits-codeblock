@@ -1,14 +1,15 @@
 import { createContext, useContext, useState } from "react";
+import type { ExpressionNode } from "../types/ast.ts";
 
 export interface Compilator {
   isRunning: boolean;
-  printable: string[];
+  printable: ExpressionNode[];
 }
 
 interface CompileContextType {
   compilator: Compilator;
   updateStatus: () => void;
-  addPrintable: (node: string) => void;
+  addPrintable: (node: ExpressionNode) => void;
   clearPrintable: () => void;
 }
 
@@ -42,7 +43,7 @@ export const CompileContextProvider = ({
     }));
   };
 
-  const addPrintable = (nodes: string) => {
+  const addPrintable = (nodes: ExpressionNode) => {
     setCompilator((prev) => ({
       ...prev,
       printable: [...prev.printable, nodes],

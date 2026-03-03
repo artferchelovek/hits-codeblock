@@ -6,6 +6,7 @@ import type {
   ProgramNode,
   StatementNode,
   VariableDeclarationNode,
+  Errors,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -27,6 +28,7 @@ export class Interpreter {
   }
 
   public *interpreter() {
+    const timeStart = new Date().getTime();
     if (!this.startNode || !this.startNode.nextId) {
       throw new Error("The starting node was not found");
     }
@@ -37,6 +39,8 @@ export class Interpreter {
     }
 
     yield* this.action(currentNode);
+
+    return { time: (Date.now() - timeStart) / 1000 };
   }
 
   private actionsNode(node: StatementNode) {
@@ -50,7 +54,7 @@ export class Interpreter {
     }
   }
 
-  private assignment(node: AssignmentNode): void {
+  private assignment(node: AssignmentNode): void | Errors {
     if (typeof node.target !== "string") {
       const index = node.target.index;
       const name =
@@ -136,54 +140,54 @@ export class Interpreter {
 
   private *action(startNode: StatementNode) {
     let currentNode: StatementNode | undefined = startNode;
+    try {
+      while (currentNode) {
+        if (currentNode.type === "For") {
+          yield* this.forNode(currentNode);
 
-    while (currentNode) {
-      if (currentNode.type === "For") {
-        yield* this.forNode(currentNode);
+          currentNode = currentNode.nextId
+            ? this.nodeMap.get(currentNode.nextId)
+            : undefined;
+          continue;
+        }
+
+        if (currentNode.type === "If") {
+          yield* this.ifNode(currentNode);
+
+          currentNode = currentNode.nextId
+            ? this.nodeMap.get(currentNode.nextId)
+            : undefined;
+          continue;
+        }
+        this.actionsNode(currentNode);
+        if (currentNode.type === "Print") {
+          const print =
+            currentNode.expression.type === "Identifier"
+              ? this.variableData.getVariableByName(currentNode.expression.name)
+              : Calculate(currentNode.expression, this.variableData);
+
+          yield {
+            type: currentNode.type,
+            id: currentNode.id,
+            variableAll: this.variableData.getAll(),
+            print: print,
+          };
+        } else {
+          yield {
+            type: currentNode.type,
+            id: currentNode.id,
+            variableAll: this.variableData.getAll(),
+          };
+        }
 
         currentNode = currentNode.nextId
           ? this.nodeMap.get(currentNode.nextId)
           : undefined;
-        continue;
       }
-
-      if (currentNode.type === "If") {
-        yield* this.ifNode(currentNode);
-
-        currentNode = currentNode.nextId
-          ? this.nodeMap.get(currentNode.nextId)
-          : undefined;
-        continue;
-      }
-
-      this.actionsNode(currentNode);
-
-      if (currentNode.type === "Print") {
-        const print =
-          currentNode.expression.type === "Identifier"
-            ? this.variableData.getVariableByName(currentNode.expression.name)
-            : Calculate(currentNode.expression, this.variableData);
-
-        yield {
-          type: currentNode.type,
-          id: currentNode.id,
-          variableAll: this.variableData.getAll(),
-          print: print,
-        };
-      } else {
-        yield {
-          type: currentNode.type,
-          id: currentNode.id,
-          variableAll: this.variableData.getAll(),
-        };
-      }
-
-      currentNode = currentNode.nextId
-        ? this.nodeMap.get(currentNode.nextId)
-        : undefined;
+    } catch (e) {
+      throw new Error(e.message, { cause: currentNode?.id });
     }
   }
-
   private *ifNode(node: IfNode) {
     this.variableData.newScope();
 

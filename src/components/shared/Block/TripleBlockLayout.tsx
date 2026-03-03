@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function TripleBlockLayout({ node, children }: Props) {
-  const { removeStatement, activeNode } = useBlockContext();
+  const { removeStatement } = useBlockContext();
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
@@ -55,7 +55,7 @@ export default function TripleBlockLayout({ node, children }: Props) {
     <div
       ref={setNodeRef}
       {...attributes}
-      className={`${styles.block} ${activeNode === node.id ? styles.active : ""}`}
+      className={styles.block}
       style={{
         position: "absolute",
         left: node.x,
