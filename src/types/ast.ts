@@ -120,3 +120,11 @@ export interface VariableForDebug {
   name: string;
   value: ExpressionNode;
 }
+
+export interface Errors {
+  type: Error;
+  message: string;
+  BlockId?: string;
+}
+
+type Error = "not_found";

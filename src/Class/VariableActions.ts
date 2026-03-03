@@ -105,7 +105,7 @@ export class VariableActions {
       throw new Error(`Indices must be number`);
     }
     if (variable?.type !== "Array") {
-      throw new Error(`Variable ${variableName} does not array`);
+      throw new Error(`Variable "${variableName}" does not array`);
     }
     if (!(indexValue >= 0 && indexValue < variable.value.length)) {
       throw new Error(`Array index out of bounds`);
