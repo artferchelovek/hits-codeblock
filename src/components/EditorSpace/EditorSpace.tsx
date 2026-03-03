@@ -31,7 +31,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
 
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
-  const [pan, setPan] = useState({ x: -2000, y: -2000 });
+  const [pan, setPan] = useState({ x: -5000, y: -5000 });
   const [isPanning, setIsPanning] = useState(false);
 
   const { setNodeRef } = useDroppable({
@@ -218,8 +218,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
           style={{
             position: "absolute",
             transform: `translate(${pan.x}px, ${pan.y}px)`,
-            width: "5000px",
-            height: "5000px",
+            width: "10000px",
+            height: "10000px",
             pointerEvents: "none",
             touchAction: "none",
           }}
@@ -230,8 +230,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
               position: "absolute",
               top: 0,
               left: 0,
-              width: "5000px",
-              height: "5000px",
+              width: "10000px",
+              height: "10000px",
               overflow: "visible",
               pointerEvents: "none",
             }}
@@ -353,8 +353,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
             ref={setNodeRef}
             className={styles.editor}
             style={{
-              width: "5000px",
-              height: "5000px",
+              width: "10000px",
+              height: "10000px",
               position: "absolute",
               pointerEvents: "all",
             }}

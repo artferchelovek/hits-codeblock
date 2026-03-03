@@ -9,7 +9,7 @@ import ToolBar from "../../components/Toolbar/ToolBar.tsx";
 
 export default function App() {
   const { addStatement } = useBlockContext();
-  const [panMain, setPanMain] = useState({ x: -2000, y: -2000 });
+  const [panMain, setPanMain] = useState({ x: -5000, y: -5000 });
 
   const dragEnd = (event: any) => {
     const { active, over, delta } = event;
