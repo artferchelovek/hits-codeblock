@@ -69,9 +69,42 @@ export function createNode(type: string): StatementNode {
       return {
         id: generateId(),
         type: "For",
-        iterator: { type: "Identifier", name: "i" },
-        from: { type: "Identifier", name: "15" },
-        to: { type: "Identifier", name: "b" },
+        iterator: {
+          type: "BinaryExpression",
+          operator: "+",
+          left: {
+            type: "Identifier",
+            name: "i",
+          },
+          right: {
+            type: "Literal",
+            value: 1,
+          },
+        },
+        from: {
+          type: "BinaryExpression",
+          operator: "=",
+          left: {
+            type: "Identifier",
+            name: "i",
+          },
+          right: {
+            type: "Literal",
+            value: 1,
+          },
+        },
+        to: {
+          type: "BinaryExpression",
+          operator: "<",
+          left: {
+            type: "Identifier",
+            name: "i",
+          },
+          right: {
+            type: "Literal",
+            value: 10,
+          },
+        },
         x: 100,
         y: 100,
         nextId: null,
@@ -84,6 +117,35 @@ export function createNode(type: string): StatementNode {
         x: 100,
         y: 100,
         nextId: null,
+      };
+    case "BreakNode":
+      return {
+        id: generateId(),
+        type: "BreakNode",
+        x: 100,
+        y: 100,
+        nexId: null,
+      };
+    case "While":
+      return {
+        id: generateId(),
+        type: "While",
+        condition: {
+          type: "BinaryExpression",
+          operator: "<=",
+          left: {
+            type: "Identifier",
+            ame: "i",
+          },
+          right: {
+            type: "Literal",
+            alue: 10,
+          },
+        },
+        x: 100,
+        y: 100,
+        nextId: null,
+        bodId: null,
       };
 
     default:

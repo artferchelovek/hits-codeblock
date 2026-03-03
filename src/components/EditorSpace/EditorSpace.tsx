@@ -4,7 +4,7 @@ import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
 import React, { useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
-import type { ForNode, IfNode } from "../../types/ast.ts";
+import type { ForNode, IfNode, WhileNode } from "../../types/ast.ts";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";
 import { createNode } from "../../logic/nodeFactory.ts";
 
@@ -60,6 +60,10 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
           if ((node as ForNode).bodyId === targetId)
             (newNode as any).bodyId = null;
         }
+        if (node.type === "While") {
+          if ((node as WhileNode).bodyId === targetId)
+            (newNode as any).bodyId = null;
+        }
         return newNode;
       });
     });
@@ -69,7 +73,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
         if (connectionType === "output1") return { ...node, trueId: targetId };
         if (connectionType === "output2") return { ...node, falseId: targetId };
       }
-      if (node.type === "For") {
+      if (node.type === "For" || node.type === "While") {
         if (connectionType === "output1") return { ...node, bodyId: targetId };
       }
       return { ...node, nextId: targetId };
@@ -278,6 +282,33 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
                   );
                   const end = getConnectorPos(
                     `input-${forNode.bodyId}`,
+                    containerRef,
+                  );
+                  if (start && end) {
+                    lines.push(
+                      <ConnectionLine
+                        key={`${node.id}-true`}
+                        startX={start.x - pan.x}
+                        startY={start.y - pan.y}
+                        endX={end.x - pan.x}
+                        endY={end.y - pan.y}
+                        color="green"
+                      />,
+                    );
+                  }
+                }
+              }
+
+              if (node.type === "While") {
+                const WhileNode = node as WhileNode;
+
+                if (WhileNode.bodyId) {
+                  const start = getConnectorPos(
+                    `out-true-${node.id}`,
+                    containerRef,
+                  );
+                  const end = getConnectorPos(
+                    `input-${WhileNode.bodyId}`,
                     containerRef,
                   );
                   if (start && end) {

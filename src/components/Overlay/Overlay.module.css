@@ -93,4 +93,15 @@
         font: var(--md-sys-text-title-medium);
         font-weight: bold;
     }
+
+    .terminalOutput {
+        background: none;
+        resize: none;
+        color: var(--md-sys-color-on-surface);
+        border: none;
+        height: 100%;
+        font-size: var(--md-sys-text-body-medium);
+        scrollbar-color: auto;
+
+    }
 }
