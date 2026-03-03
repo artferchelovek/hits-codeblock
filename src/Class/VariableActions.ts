@@ -6,16 +6,30 @@ import type {
 import { Calculate } from "../logic/expressionCount.ts";
 
 export class VariableActions {
-  private variableData = new Map<string, ExpressionNode>();
+  private variableData: Map<string, ExpressionNode>[] = [
+    new Map<string, ExpressionNode>(),
+  ];
 
   public constructor() {}
 
-  public declareVariable(variableName: string): void {
-    const variable = this.variableData.get(variableName);
-    if (variable) {
-      throw new Error("Variable already declared");
+  public newScope() {
+    this.variableData.push(new Map<string, ExpressionNode>());
+  }
+  public workScope() {
+    return this.variableData[this.variableData.length - 1];
+  }
+  public deleteScope() {
+    if (this.variableData.length > 1) {
+      this.variableData.pop();
     }
-    this.variableData.set(variableName, { type: "Literal", value: 0 });
+  }
+
+  public declareVariable(variableName: string): void {
+    const variable = this.workScope().get(variableName);
+    if (variable) {
+      return;
+    }
+    this.workScope().set(variableName, { type: "Literal", value: 0 });
   }
 
   public changeVariable(
@@ -23,62 +37,68 @@ export class VariableActions {
     variableValue: ExpressionNode,
     index?: ExpressionNode,
   ): void {
-    const variable = this.variableData.get(variableName);
+    for (let i = this.variableData.length - 1; i >= 0; i--) {
+      const variable = this.variableData[i].get(variableName);
 
-    if (variable) {
-      if (index && variable?.type === "Array") {
-        const indexValue = this.checkAndGetIndex(index, variableName);
-        const array = variable as ArrayNode;
+      if (variable) {
+        if (index && variable?.type === "Array") {
+          const indexValue = this.checkAndGetIndex(index, variableName);
+          const array = variable as ArrayNode;
+          array.value[indexValue] = Calculate(variableValue, this);
+          return;
+        }
 
-        array.value[indexValue] = Calculate(variableValue, this);
+        this.variableData[i].set(
+          variableName,
+          this.countExpression(variableValue),
+        );
         return;
       }
-
-      this.variableData.set(variableName, this.countExpression(variableValue));
-    } else {
-      throw new Error("Variable is not defined");
     }
+
+    throw new Error("Variable is not defined");
   }
 
   public getVariableByName(
     variableName: string,
     index?: ExpressionNode,
-  ): ExpressionNode | undefined {
-    if (this.variableData.has(variableName)) {
-      const variable = this.variableData.get(variableName);
+  ): ExpressionNode {
+    for (let i = this.variableData.length - 1; i >= 0; i--) {
+      if (this.variableData[i].has(variableName)) {
+        const variable = this.variableData[i].get(variableName);
 
-      if (index) {
-        const indexValue = this.checkAndGetIndex(index, variableName);
+        if (index && index.type === "Literal") {
+          const indexValue = this.checkAndGetIndex(index, variableName);
 
-        if (variable?.type === "Array" && variable) {
-          const array = variable as ArrayNode;
-          return array.value[indexValue];
+          if (variable?.type === "Array" && variable) {
+            const array = variable as ArrayNode;
+            return array.value[indexValue];
+          }
+        }
+        if (variable) {
+          return variable;
         }
       }
-
-      return variable;
-    } else {
-      throw new Error("Variable is not defined");
     }
+    throw new Error("Variable is not defined");
   }
 
   public getAll(): VariableForDebug[] {
     const variables: VariableForDebug[] = [];
-    this.variableData.forEach((value, name) => {
-      variables.push({ type: "VariableForDebug", name: name, value: value });
-    });
-    return variables;
-  }
+    this.variableData.forEach((variable) =>
+      variable.forEach((value, name) =>
+        variables.push({ type: "VariableForDebug", name: name, value: value }),
+      ),
+    );
 
-  public getMap() {
-    return new Map<string, ExpressionNode>(this.variableData);
+    return variables;
   }
 
   private checkAndGetIndex(
     index: ExpressionNode,
     variableName: string,
   ): number {
-    const variable = this.variableData.get(variableName);
+    const variable = this.getVariableByName(variableName);
     const indexValue = Calculate(index, this).value;
 
     if (typeof indexValue !== "number") {

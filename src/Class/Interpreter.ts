@@ -1,5 +1,8 @@
 import type {
   AssignmentNode,
+  BooleanNode,
+  ForNode,
+  IfNode,
   ProgramNode,
   StatementNode,
   VariableDeclarationNode,
@@ -27,59 +30,23 @@ export class Interpreter {
     if (!this.startNode || !this.startNode.nextId) {
       throw new Error("The starting node was not found");
     }
-
-    let currentNode = this.nodeMap.get(this.startNode.nextId);
+    const currentNode = this.nodeMap.get(this.startNode.nextId);
 
     if (currentNode === undefined) {
       throw new Error("The starting node does not point anywhere.");
     }
 
-    while (currentNode) {
-      const nextID = this.actionsNode(currentNode);
-
-      const temp = currentNode;
-
-      if (nextID === null || nextID === undefined) {
-        currentNode = undefined;
-      } else {
-        currentNode = this.nodeMap.get(nextID);
-      }
-
-      if (temp.type === "Print") {
-        yield {
-          type: temp.type,
-          id: temp.id,
-          variableAll: this.variableData.getAll(),
-          print: Calculate(temp.expression, this.variableData),
-        };
-      } else {
-        yield {
-          type: temp.type,
-          id: temp.id,
-          variableAll: this.variableData.getAll(),
-        };
-      }
-    }
+    yield* this.action(currentNode);
   }
 
-  private actionsNode(node: StatementNode): string | undefined | null {
+  private actionsNode(node: StatementNode) {
     switch (node.type) {
       case "Assignment":
         this.assignment(node);
-        return node.nextId;
-
+        break;
       case "VariableDeclaration":
         this.declaration(node);
-        return node.nextId;
-
-      case "For":
         break;
-      case "If":
-        break;
-      case "Print":
-        return node.nextId;
-      default:
-        return node.nextId;
     }
   }
 
@@ -103,9 +70,151 @@ export class Interpreter {
 
   private declaration(node: VariableDeclarationNode): void {
     try {
-      this.variableData.declareVariable(node.name);
+      const names = node.name.split(",").map((item) => item.trim());
+      for (const name of names) {
+        this.variableData.declareVariable(name);
+      }
     } catch (e) {
       throw new Error(`Unable to declare assignment: `); //???
     }
+  }
+
+  private *forNode(node: ForNode) {
+    this.variableData.newScope();
+
+    if (node.iterator.type !== "BinaryExpression") {
+      throw new Error("Iterator should be a BinaryExpression");
+    }
+
+    if (
+      node.from.type !== "BinaryExpression" ||
+      node.from.left.type !== "Identifier"
+    ) {
+      throw new Error("Need declare variable ");
+    }
+
+    const nameIterator = node.from.left.name;
+
+    this.variableData.declareVariable(nameIterator);
+    this.variableData.changeVariable(
+      nameIterator,
+      Calculate(node.from.right, this.variableData),
+    );
+
+    let condition = Calculate(node.to, this.variableData);
+
+    if (condition.type !== "Boolean") {
+      throw new Error("Condition must be a boolean");
+    }
+
+    yield {
+      type: node.type,
+      id: node.id,
+      variableAll: this.variableData.getAll(),
+    };
+
+    while (condition.value) {
+      if (node.bodyId) {
+        const currentNode = this.nodeMap.get(node.bodyId);
+
+        if (currentNode) {
+          yield* this.action(currentNode);
+        }
+      }
+
+      const value = Calculate(node.iterator, this.variableData);
+      this.variableData.changeVariable(nameIterator, value);
+
+      condition = Calculate(node.to, this.variableData);
+      if (condition.type !== "Boolean") {
+        throw new Error("Condition must be a boolean");
+      }
+    }
+
+    this.variableData.deleteScope();
+  }
+
+  private *action(startNode: StatementNode) {
+    let currentNode: StatementNode | undefined = startNode;
+
+    while (currentNode) {
+      if (currentNode.type === "For") {
+        yield* this.forNode(currentNode);
+
+        currentNode = currentNode.nextId
+          ? this.nodeMap.get(currentNode.nextId)
+          : undefined;
+        continue;
+      }
+
+      if (currentNode.type === "If") {
+        yield* this.ifNode(currentNode);
+
+        currentNode = currentNode.nextId
+          ? this.nodeMap.get(currentNode.nextId)
+          : undefined;
+        continue;
+      }
+
+      this.actionsNode(currentNode);
+
+      if (currentNode.type === "Print") {
+        const print =
+          currentNode.expression.type === "Identifier"
+            ? this.variableData.getVariableByName(currentNode.expression.name)
+            : Calculate(currentNode.expression, this.variableData);
+
+        yield {
+          type: currentNode.type,
+          id: currentNode.id,
+          variableAll: this.variableData.getAll(),
+          print: print,
+        };
+      } else {
+        yield {
+          type: currentNode.type,
+          id: currentNode.id,
+          variableAll: this.variableData.getAll(),
+        };
+      }
+
+      currentNode = currentNode.nextId
+        ? this.nodeMap.get(currentNode.nextId)
+        : undefined;
+    }
+  }
+
+  private *ifNode(node: IfNode) {
+    this.variableData.newScope();
+
+    const trueId = node.trueId;
+    const falseId = node.falseId;
+    const condition = Calculate(
+      node.condition,
+      this.variableData,
+    ) as BooleanNode;
+
+    yield {
+      type: node.type,
+      id: node.id,
+      variableAll: this.variableData.getAll(),
+    };
+
+    if (condition.value) {
+      if (trueId) {
+        const nextActions = this.nodeMap.get(trueId);
+        if (nextActions) {
+          yield* this.action(nextActions);
+        }
+      }
+    } else {
+      if (falseId) {
+        const nextActions = this.nodeMap.get(falseId);
+        if (nextActions) {
+          yield* this.action(nextActions);
+        }
+      }
+    }
+    this.variableData.deleteScope();
   }
 }

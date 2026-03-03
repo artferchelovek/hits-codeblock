@@ -13,45 +13,6 @@ export function stringToExpression(expression: string): ExpressionNode {
     };
   }
 
-  if (current.startsWith("[") && current.endsWith("]")) {
-    const elements: ExpressionNode[] = [];
-    current
-      .slice(1, -1)
-      .split(",")
-      .forEach((elem) => {
-        elements.push(stringToExpression(elem));
-      });
-    return {
-      type: "Array",
-      value: elements,
-    };
-  }
-
-  if (current.endsWith("]")) {
-    let depth = 0;
-    let bracketIndex = -1;
-
-    for (let i = current.length - 1; i >= 0; i--) {
-      if (current[i] === "]") depth++;
-      if (current[i] === "[") depth--;
-      if (depth === 0) {
-        bracketIndex = i;
-        break;
-      }
-    }
-
-    if (bracketIndex > 0) {
-      const objectPart = current.slice(0, bracketIndex).trim();
-      const propertyPart = current.slice(bracketIndex + 1, -1).trim();
-
-      return {
-        type: "MemberExpression",
-        object: stringToExpression(objectPart),
-        index: stringToExpression(propertyPart),
-      };
-    }
-  }
-
   if (current[0] === "(" && current[current.length - 1] === ")") {
     let depth = 0;
     let isWrapped = true;
@@ -102,7 +63,7 @@ export function stringToExpression(expression: string): ExpressionNode {
 
     if (stack === 0) {
       const twoCharOp = current.substring(i, i + 2);
-      const ops2 = [">=", "<=", "=="];
+      const ops2 = [">=", "<=", "==", "!="];
       if (ops2.includes(twoCharOp)) {
         const priority = getPriority(twoCharOp);
         if (priority <= minPriority) {
@@ -114,7 +75,7 @@ export function stringToExpression(expression: string): ExpressionNode {
         continue;
       }
 
-      if ("+-*/><%".includes(char)) {
+      if ("+-*/><%=".includes(char)) {
         const priority = getPriority(char);
         if (priority <= minPriority) {
           minPriority = priority;
@@ -135,11 +96,59 @@ export function stringToExpression(expression: string): ExpressionNode {
       ),
     };
   }
+  if (current.endsWith("]")) {
+    let depth = 0;
+    let bracketIndex = -1;
 
+    for (let i = current.length - 1; i >= 0; i--) {
+      if (current[i] === "]") depth++;
+      if (current[i] === "[") depth--;
+      if (depth === 0) {
+        bracketIndex = i;
+        break;
+      }
+    }
+    if (current.startsWith("[") && current.endsWith("]")) {
+      const elements: ExpressionNode[] = [];
+
+      current
+
+        .slice(1, -1)
+
+        .split(",")
+
+        .forEach((elem) => {
+          elements.push(stringToExpression(elem));
+        });
+
+      return {
+        type: "Array",
+
+        value: elements,
+      };
+    }
+
+    if (bracketIndex > 0) {
+      const objectPart = current.slice(0, bracketIndex).trim();
+      const propertyPart = current.slice(bracketIndex + 1, -1).trim();
+
+      return {
+        type: "MemberExpression",
+        object: stringToExpression(objectPart),
+        index: stringToExpression(propertyPart),
+      };
+    }
+  }
   const regNumber = /^-?\d+(\.\d+)?$/;
-  const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
+  const regVariable =
+    /^([a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)(,[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)*$/;
+  const regBoolean = /^(?:true|false)$/;
 
   const trimmedCurrent = current.trim();
+
+  if (regBoolean.test(trimmedCurrent)) {
+    return { type: "Boolean", value: trimmedCurrent == "true" };
+  }
   if (regNumber.test(trimmedCurrent)) {
     return { type: "Literal", value: Number(trimmedCurrent) };
   }
@@ -152,11 +161,14 @@ export function stringToExpression(expression: string): ExpressionNode {
 
 function getPriority(operator: string): number {
   switch (operator) {
+    case "=":
+      return -1;
     case "==":
     case ">":
     case "<":
     case ">=":
     case "<=":
+    case "!=":
       return 1;
     case "+":
     case "-":
@@ -181,10 +193,15 @@ export function renderExpression(expr: ExpressionNode): string {
     case "Identifier":
       return expr.name;
 
-    case "BinaryExpression":
+    case "Boolean":
+      return String(expr.value);
+
+    case "BinaryExpression": {
       const leftStr = renderExpression(expr.left);
       const rightStr = renderExpression(expr.right);
       return `${leftStr} ${expr.operator} ${rightStr}`;
+    }
+
     case "Array":
       return `[${expr.value.map((i) => renderExpression(i)).join(", ")}]`;
     case "MemberExpression":
