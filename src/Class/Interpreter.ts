@@ -55,7 +55,7 @@ export class Interpreter {
   }
 
   private assignment(node: AssignmentNode): void | Errors {
-    if (typeof node.target !== "string") {
+    if (node.target.type === "MemberExpression") {
       const index = node.target.index;
       const name =
         node.target.object.type === "Identifier" ? node.target.object.name : "";
@@ -64,12 +64,11 @@ export class Interpreter {
       return;
     }
 
-    if (node.value.type === "Array") {
-      this.variableData.changeVariable(node.target, node.value);
-      return;
+    if (node.target.type === "Identifier") {
+      this.variableData.changeVariable(node.target.name, node.value);
+    } else {
+      throw new Error("Unsuitable type for assignment");
     }
-
-    this.variableData.changeVariable(node.target, node.value);
   }
 
   private declaration(node: VariableDeclarationNode): void {
