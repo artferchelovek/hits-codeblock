@@ -24,7 +24,8 @@ export default function App() {
       const newNode = createNode(type);
       newNode.x = newNode.x + delta.x - panMain.x;
       newNode.y = newNode.y + delta.y - panMain.y;
-      addStatement(null, newNode);
+      console.log(newNode.x, newNode.y);
+      addStatement(newNode);
     }
   };
 

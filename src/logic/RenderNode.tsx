@@ -7,6 +7,7 @@ import For from "../components/shared/Block/For.tsx";
 import StartNode from "../components/shared/Block/StartNode.tsx";
 import BreakNode from "../components/shared/Block/BreakNode.tsx";
 import While from "../components/shared/Block/While.tsx";
+import GetSize from "../components/shared/Block/getSize.tsx";
 
 export default function RenderNode({ node }: { node: StatementNode }) {
   switch (node.type) {
@@ -26,6 +27,8 @@ export default function RenderNode({ node }: { node: StatementNode }) {
       return <StartNode node={node} />;
     case "BreakNode":
       return <BreakNode node={node} />;
+    case "getSize":
+      return <GetSize node={node} />;
     default:
       return <p>мяу</p>;
   }

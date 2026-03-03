@@ -20,7 +20,10 @@ export function createNode(type: string): StatementNode {
       return {
         id: generateId(),
         type: "Assignment",
-        target: "",
+        target: {
+          type: "Identifier",
+          name: "",
+        },
         value: {
           type: "Literal",
           value: 0,
@@ -124,7 +127,7 @@ export function createNode(type: string): StatementNode {
         type: "BreakNode",
         x: 100,
         y: 100,
-        nexId: null,
+        nextId: nul,
       };
     case "While":
       return {
@@ -135,17 +138,33 @@ export function createNode(type: string): StatementNode {
           operator: "<=",
           left: {
             type: "Identifier",
-            ame: "i",
+            name: "i",
           },
           right: {
             type: "Literal",
-            alue: 10,
+            value: 1,
           },
         },
         x: 100,
         y: 100,
         nextId: null,
-        bodId: null,
+        bodyId: null,
+      };
+    case "getSize":
+      return {
+        id: generateId(),
+        type: "getSize",
+        x: 100,
+        y: 100,
+        nextId: null,
+        target: {
+          type: "Identifier",
+          name: ",
+        },
+        object: {
+          type: "Identifier",
+          name: ",
+        ,
       };
 
     default:

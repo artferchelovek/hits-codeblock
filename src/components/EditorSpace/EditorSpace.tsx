@@ -102,7 +102,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
         const newNode = createNode(type);
         newNode.x = delta.x - pan.x;
         newNode.y = delta.y - pan.y;
-        addStatement(null, newNode);
+        addStatement(newNode);
       }
     }
 
