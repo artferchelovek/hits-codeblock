@@ -50,7 +50,6 @@ const Topper = ({
         let result = runtime.next();
 
         while (!result.done) {
-          console.log(result.value);
           if (result.value?.type === "Print") addPrintable(result.value.print);
           result = runtime.next();
         }
