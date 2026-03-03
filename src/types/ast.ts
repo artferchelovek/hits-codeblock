@@ -62,7 +62,8 @@ export type ExpressionNode =
   | StringNode
   | BinaryExpressionNode
   | ArrayNode
-  | MemberExpressionNode;
+  | MemberExpressionNode
+  | BooleanNode;
 
 export interface LiteralNode {
   type: "Literal";
@@ -90,9 +91,26 @@ export interface StringNode {
   value: string;
 }
 
+export interface BooleanNode {
+  type: "Boolean";
+  value: boolean;
+}
+
 export interface BinaryExpressionNode {
   type: "BinaryExpression";
-  operator: "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==";
+  operator:
+    | "+"
+    | "-"
+    | "*"
+    | "/"
+    | "%"
+    | ">"
+    | "<"
+    | ">="
+    | "<="
+    | "=="
+    | "!="
+    | "=";
   left: ExpressionNode;
   right: ExpressionNode;
 }
