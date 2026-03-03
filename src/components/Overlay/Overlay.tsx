@@ -9,12 +9,11 @@ import {
   useCompileContext,
 } from "../../context/CompileContext.tsx";
 import Terminal from "./Terminal.tsx";
-import { renderExpression } from "../../logic/expression.ts";
+import type { ExpressionNode } from "../../types/ast.ts";
 
 export default function Overlay() {
   const { compilator, updateStatus, addPrintable, clearPrintable } =
     useCompileContext();
-  const { program } = useBlockContext();
   return (
     <div className={styles.overlay}>
       <Topper
@@ -24,43 +23,46 @@ export default function Overlay() {
         clearPrintable={clearPrintable}
       />
       <Palette />
-      <Terminal compilator={compilator} program={program} />
+      <Terminal compilator={compilator} />
     </div>
   );
 }
 
 const Topper = ({
   compilator,
+  updateStatus,
   addPrintable,
   clearPrintable,
 }: {
   compilator: Compilator;
   updateStatus: () => void;
-  addPrintable: (node: string) => void;
+  addPrintable: (node: ExpressionNode) => void;
   clearPrintable: () => void;
 }) => {
   const { program, setActiveNode } = useBlockContext();
 
   const startProgram = () => {
-    clearPrintable();
     if (compilator) {
-      console.log(JSON.stringify(program, null, 2));
+      updateStatus();
+      clearPrintable();
       try {
         const runtime = new Interpreter(program).interpreter();
         let result = runtime.next();
 
         while (!result.done) {
-          if (result.value?.type === "Print")
-            addPrintable(renderExpression(result.value.print));
+          console.log(result.value);
+          if (result.value?.type === "Print") addPrintable(result.value.print);
           result = runtime.next();
         }
       } catch (error) {
-        alert(error);
+        console.log(error);
       }
+      updateStatus();
     }
   };
 
   const startProgramSlowly = () => {
+    updateStatus();
     clearPrintable();
     try {
       const runtime = new Interpreter(program).interpreter();
@@ -110,11 +112,8 @@ const Palette = () => {
       <DraggableBlock type="VariableDeclaration" />
       <DraggableBlock type="Assignment" />
       <DraggableBlock type="Print" />
-      <DraggableBlock type="If" />
-      <DraggableBlock type="For" />
-      <DraggableBlock type="While" />
-      <DraggableBlock type="BreakNode" />
-      <DraggableBlock type="getSize" />
+      <DraggableBlock type={"If"} />
+      <DraggableBlock type={"For"} />
     </div>
   );
 };
