@@ -72,7 +72,8 @@ const Topper = ({
           setActiveNode(null);
         } else {
           setActiveNode(result.value.id);
-          if (result.value?.type === "Print") addPrintable(result.value.print);
+          if (result.value?.type === "Print")
+            addPrintable(renderExpression(result.value.print));
         }
       }, 1000);
     } catch (error) {
