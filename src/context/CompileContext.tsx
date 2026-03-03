@@ -33,7 +33,8 @@ export const CompileContextProvider = ({
     printable: [],
   });
 
-  const clearPrintable = () => (compilator.printable = []);
+  const clearPrintable = () =>
+    setCompilator((prev) => ({ ...prev, printable: [] }));
 
   const updateStatus = () => {
     setCompilator((prev) => ({
