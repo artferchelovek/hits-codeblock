@@ -46,7 +46,7 @@ export default function For({ node }: { node: ForNode }) {
         }}
         type="text"
       />
-      <p>&rarr;</p>
+      <p>:</p>
       <input
         value={to}
         onChange={(e) => {

@@ -1,14 +1,26 @@
 import styles from "./Overlay.module.css";
 import type { Compilator } from "../../context/CompileContext.tsx";
-import { renderExpression } from "../../logic/expression.ts";
+import type { ProgramNode } from "../../types/ast.ts";
 
-export default function Terminal({ compilator }: { compilator: Compilator }) {
+export default function Terminal({
+  compilator,
+  program,
+}: {
+  compilator: Compilator;
+  program: ProgramNode;
+}) {
   return (
     <div className={styles.terminal}>
       <p className={styles.terminalLabel}>CodeSheLL</p>
-      {compilator.printable.map((elem) => (
-        <p>{renderExpression(elem)}</p>
-      ))}
+      <textarea
+        readOnly
+        className={styles.terminalOutput}
+        value={`codeshell/${program.name}.cshl\n${compilator.printable
+          .map((elem) => `${elem}`)
+          .join("\n")}`}
+        cols={30}
+        rows={10}
+      ></textarea>
     </div>
   );
 }
