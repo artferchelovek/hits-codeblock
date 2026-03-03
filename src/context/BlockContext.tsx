@@ -1,33 +1,12 @@
 import React, { createContext, useContext, useState } from "react";
-import type {
-  AssignmentNode,
-  BreakNode,
-  ForNode,
-  IfNode,
-  PrintNode,
-  ProgramNode,
-  StartNode,
-  StatementNode,
-  VariableDeclarationNode,
-  WhileNode,
-} from "../types/ast.ts";
+import type { ProgramNode, StatementNode } from "../types/ast.ts";
 
 interface BlockContextType {
   program: ProgramNode;
-  addStatement: (node: StatementNode) => void;
+  addStatement: (parentId: string | null, node: StatementNode) => void;
   updateStatement: (
     id: string,
-    updater: (
-      n: StatementNode,
-    ) =>
-      | VariableDeclarationNode
-      | AssignmentNode
-      | ForNode
-      | WhileNode
-      | IfNode
-      | PrintNode
-      | StartNode
-      | BreakNode,
+    updater: (node: StatementNode) => StatementNode,
   ) => void;
   removeStatement: (id: string) => void;
   removeProgram: () => void;
@@ -58,10 +37,17 @@ export const BlockContextProvider = ({
   });
   const [activeNode, setActiveNode] = useState<string | null>(null);
 
-  const addStatement = (node: StatementNode) => {
-    console.log("addStatement", node);
+  const addStatement = (parentId: string | null, node: StatementNode) => {
+    console.log("addStatement", parentId, node);
     setProgram((prev) => {
-      return { ...prev, body: [...prev.body, node] };
+      if (!parentId) {
+        return { ...prev, body: [...prev.body, node] };
+      }
+
+      return {
+        ...prev,
+        body: prev.body,
+      };
     });
   };
 
