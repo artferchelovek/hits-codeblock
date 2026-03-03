@@ -1,5 +1,5 @@
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
-import type { getSize } from "../../../types/ast.ts";
+import type { GetSizeNode } from "../../../types/ast.ts";
 import { useBlockContext } from "../../../context/BlockContext.tsx";
 import { useEffect, useState } from "react";
 import {
@@ -7,7 +7,7 @@ import {
   stringToExpression,
 } from "../../../logic/expression.ts";
 
-export default function GetSize({ node }: { node: getSize }) {
+export default function GetSize({ node }: { node: GetSizeNode }) {
   const { updateStatement } = useBlockContext();
   const [target, setTarget] = useState<string>("");
   const [object, setObject] = useState<string>("");

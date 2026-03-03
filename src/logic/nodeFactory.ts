@@ -127,7 +127,7 @@ export function createNode(type: string): StatementNode {
         type: "BreakNode",
         x: 100,
         y: 100,
-        nextId: nul,
+        nextId: null,
       };
     case "While":
       return {
@@ -159,12 +159,12 @@ export function createNode(type: string): StatementNode {
         nextId: null,
         target: {
           type: "Identifier",
-          name: ",
+          name: "",
         },
         object: {
           type: "Identifier",
-          name: ",
-        ,
+          name: "",
+        },
       };
 
     default:

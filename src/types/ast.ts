@@ -20,7 +20,7 @@ export type StatementNode =
   | PrintNode
   | StartNode
   | BreakNode
-  | getSize;
+  | GetSizeNode;
 
 export interface StartNode extends BaseNodeAttributes {
   type: "StartNode";
@@ -39,7 +39,7 @@ export interface VariableDeclarationNode extends BaseNodeAttributes {
 
 export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
-  target: IdentifierNode | MemberExpressionNode;
+  target: ExpressionNode;
   value: ExpressionNode;
   size?: LiteralNode | BinaryExpressionNode;
 }
@@ -135,8 +135,8 @@ export interface VariableForDebug {
   value: ExpressionNode;
 }
 
-export interface getSize extends BaseNodeAttributes {
+export interface GetSizeNode extends BaseNodeAttributes {
   type: "getSize";
-  target: IdentifierNode;
+  target: ExpressionNode;
   object: ExpressionNode;
 }

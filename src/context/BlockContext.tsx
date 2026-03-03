@@ -3,6 +3,7 @@ import type {
   AssignmentNode,
   BreakNode,
   ForNode,
+  GetSizeNode,
   IfNode,
   PrintNode,
   ProgramNode,
@@ -27,6 +28,7 @@ interface BlockContextType {
       | IfNode
       | PrintNode
       | StartNode
+      | GetSizeNode
       | BreakNode,
   ) => void;
   removeStatement: (id: string) => void;
