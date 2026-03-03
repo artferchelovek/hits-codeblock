@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import type { AssignmentNode } from "../../../types/ast.ts";
 
 export default function Assignment({ node }: { node: AssignmentNode }) {
-  const [targetValue, setTargetValue] = useState(renderExpression(node.target));
+  const [targetValue, setTargetValue] = useState("");
   const [inputValue, setInputValue] = useState(renderExpression(node.value));
 
   const { updateStatement } = useBlockContext();
@@ -27,23 +27,14 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
 
           try {
             const parsed = stringToExpression(value);
-            if (parsed.type === "Identifier") {
-              updateStatement(node.id, (n) => {
-                if (n.type !== "Assignment") {
-                  return n;
-                }
+            updateStatement(node.id, (n) => {
+              if (n.type !== "Assignment") return n;
 
-                return {
-                  ...n,
-                  target: parsed,
-                };
-              });
-            } else if (parsed.type === "MemberExpression") {
-              updateStatement(node.id, (n) => ({
+              return {
                 ...n,
                 target: parsed,
-              }));
-            }
+              };
+            });
           } catch {}
         }}
         value={targetValue}
