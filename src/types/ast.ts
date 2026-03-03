@@ -140,3 +140,11 @@ export interface getSize extends BaseNodeAttributes {
   target: IdentifierNode;
   object: ExpressionNode;
 }
+
+export interface Errors {
+  type: Error;
+  message: string;
+  BlockId?: string;
+}
+
+type Error = "not_found";
