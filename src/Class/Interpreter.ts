@@ -27,6 +27,7 @@ export class Interpreter {
   }
 
   public *interpreter() {
+    const timeStart = new Date().getTime();
     if (!this.startNode || !this.startNode.nextId) {
       throw new Error("The starting node was not found");
     }
@@ -37,6 +38,8 @@ export class Interpreter {
     }
 
     yield* this.action(currentNode);
+
+    return { time: (Date.now() - timeStart) / 1000 };
   }
 
   private actionsNode(node: StatementNode) {
