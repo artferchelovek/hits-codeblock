@@ -15,20 +15,12 @@ export type StatementNode =
   | VariableDeclarationNode
   | AssignmentNode
   | ForNode
-  | WhileNode
   | IfNode
   | PrintNode
-  | StartNode
-  | BreakNode
-  | getSize;
+  | StartNode;
 
 export interface StartNode extends BaseNodeAttributes {
   type: "StartNode";
-  nextId: string | null;
-}
-
-export interface BreakNode extends BaseNodeAttributes {
-  type: "BreakNode";
   nextId: string | null;
 }
 
@@ -39,9 +31,9 @@ export interface VariableDeclarationNode extends BaseNodeAttributes {
 
 export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
-  target: IdentifierNode | MemberExpressionNode;
+  target: string | MemberExpressionNode; // ima peremennoi
   value: ExpressionNode;
-  size?: LiteralNode | BinaryExpressionNode;
+  method?: string;
 }
 
 export interface ForNode extends BaseNodeAttributes {
@@ -49,12 +41,6 @@ export interface ForNode extends BaseNodeAttributes {
   iterator: ExpressionNode;
   from: ExpressionNode;
   to: ExpressionNode;
-  bodyId: string | null;
-}
-
-export interface WhileNode extends BaseNodeAttributes {
-  type: "While";
-  condition: BinaryExpressionNode;
   bodyId: string | null;
 }
 
@@ -133,12 +119,6 @@ export interface VariableForDebug {
   type: "VariableForDebug";
   name: string;
   value: ExpressionNode;
-}
-
-export interface getSize extends BaseNodeAttributes {
-  type: "getSize";
-  target: IdentifierNode;
-  object: ExpressionNode;
 }
 
 export interface Errors {

@@ -4,7 +4,7 @@ import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
 import React, { useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
-import type { ForNode, IfNode, WhileNode } from "../../types/ast.ts";
+import type { ForNode, IfNode } from "../../types/ast.ts";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";
 import { createNode } from "../../logic/nodeFactory.ts";
 
@@ -31,7 +31,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
 
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
-  const [pan, setPan] = useState({ x: -5000, y: -5000 });
+  const [pan, setPan] = useState({ x: -2000, y: -2000 });
   const [isPanning, setIsPanning] = useState(false);
 
   const { setNodeRef } = useDroppable({
@@ -60,10 +60,6 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
           if ((node as ForNode).bodyId === targetId)
             (newNode as any).bodyId = null;
         }
-        if (node.type === "While") {
-          if ((node as WhileNode).bodyId === targetId)
-            (newNode as any).bodyId = null;
-        }
         return newNode;
       });
     });
@@ -73,7 +69,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
         if (connectionType === "output1") return { ...node, trueId: targetId };
         if (connectionType === "output2") return { ...node, falseId: targetId };
       }
-      if (node.type === "For" || node.type === "While") {
+      if (node.type === "For") {
         if (connectionType === "output1") return { ...node, bodyId: targetId };
       }
       return { ...node, nextId: targetId };
@@ -102,7 +98,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
         const newNode = createNode(type);
         newNode.x = delta.x - pan.x;
         newNode.y = delta.y - pan.y;
-        addStatement(newNode);
+        addStatement(null, newNode);
       }
     }
 
@@ -222,8 +218,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
           style={{
             position: "absolute",
             transform: `translate(${pan.x}px, ${pan.y}px)`,
-            width: "10000px",
-            height: "10000px",
+            width: "5000px",
+            height: "5000px",
             pointerEvents: "none",
             touchAction: "none",
           }}
@@ -234,8 +230,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
               position: "absolute",
               top: 0,
               left: 0,
-              width: "10000px",
-              height: "10000px",
+              width: "5000px",
+              height: "5000px",
               overflow: "visible",
               pointerEvents: "none",
             }}
@@ -282,33 +278,6 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
                   );
                   const end = getConnectorPos(
                     `input-${forNode.bodyId}`,
-                    containerRef,
-                  );
-                  if (start && end) {
-                    lines.push(
-                      <ConnectionLine
-                        key={`${node.id}-true`}
-                        startX={start.x - pan.x}
-                        startY={start.y - pan.y}
-                        endX={end.x - pan.x}
-                        endY={end.y - pan.y}
-                        color="green"
-                      />,
-                    );
-                  }
-                }
-              }
-
-              if (node.type === "While") {
-                const WhileNode = node as WhileNode;
-
-                if (WhileNode.bodyId) {
-                  const start = getConnectorPos(
-                    `out-true-${node.id}`,
-                    containerRef,
-                  );
-                  const end = getConnectorPos(
-                    `input-${WhileNode.bodyId}`,
                     containerRef,
                   );
                   if (start && end) {
@@ -384,8 +353,8 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
             ref={setNodeRef}
             className={styles.editor}
             style={{
-              width: "10000px",
-              height: "10000px",
+              width: "5000px",
+              height: "5000px",
               position: "absolute",
               pointerEvents: "all",
             }}
