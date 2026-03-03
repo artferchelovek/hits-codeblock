@@ -27,6 +27,7 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
 
           try {
             const parsed = stringToExpression(value);
+
             updateStatement(node.id, (n) => {
               if (n.type !== "Assignment") return n;
 
@@ -52,10 +53,16 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
           try {
             const parsed = stringToExpression(value);
 
-            updateStatement(node.id, (n) => ({
-              ...n,
-              value: parsed,
-            }));
+            updateStatement(node.id, (n) => {
+              if (n.type !== "Assignment") {
+                return n;
+              }
+
+              return {
+                ...n,
+                value: parsed,
+              };
+            });
           } catch {}
         }}
         value={inputValue}
