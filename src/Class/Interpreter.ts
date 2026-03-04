@@ -9,7 +9,6 @@ import type {
   WhileNode,
   DataForDebug,
   GetSizeNode,
-  ArrayNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -78,13 +77,9 @@ export class Interpreter {
   }
 
   private declaration(node: VariableDeclarationNode): void {
-    try {
-      const names = node.name.split(",").map((item) => item.trim());
-      for (const name of names) {
-        this.variableData.declareVariable(name);
-      }
-    } catch (e) {
-      throw new Error(`Unable to declare assignment: `); //???
+    const names = node.name.split(",").map((item) => item.trim());
+    for (const name of names) {
+      this.variableData.declareVariable(name);
     }
   }
 

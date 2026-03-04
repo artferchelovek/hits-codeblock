@@ -26,10 +26,18 @@ export class VariableActions {
 
   public declareVariable(variableName: string): void {
     const variable = this.workScope().get(variableName);
+    const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
+
     if (variable) {
+      throw new Error(`Variable already declared: ${variableName}`);
+    }
+
+    if (regVariable.test(variableName)) {
+      this.workScope().set(variableName, { type: "Literal", value: 0 });
       return;
     }
-    this.workScope().set(variableName, { type: "Literal", value: 0 });
+
+    throw new Error("Unsupported variable name: " + variableName);
   }
 
   public changeVariable(
@@ -69,10 +77,17 @@ export class VariableActions {
 
         if (index && index.type === "Literal") {
           const indexValue = this.checkAndGetIndex(index, variableName);
+          let indexElem: ExpressionNode;
+          if (
+            variable &&
+            (variable.type === "Array" || variable.type === "String")
+          ) {
+            indexElem =
+              variable.type === "Array"
+                ? variable.value[indexValue]
+                : { type: "String", value: variable.value[indexValue] };
 
-          if (variable?.type === "Array" && variable) {
-            const array = variable as ArrayNode;
-            return array.value[indexValue];
+            return indexElem;
           }
         }
         if (variable) {
@@ -104,11 +119,11 @@ export class VariableActions {
     if (typeof indexValue !== "number") {
       throw new Error(`Indices must be number`);
     }
-    if (variable?.type !== "Array") {
+    if (variable?.type !== "Array" && variable?.type !== "String") {
       throw new Error(`Variable "${variableName}" does not array`);
     }
     if (!(indexValue >= 0 && indexValue < variable.value.length)) {
-      throw new Error(`Array index out of bounds`);
+      throw new Error(`${variable.type} index out of range`);
     }
     return indexValue;
   }
