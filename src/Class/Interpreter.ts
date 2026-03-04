@@ -8,6 +8,8 @@ import type {
   VariableDeclarationNode,
   WhileNode,
   DataForDebug,
+  GetSizeNode,
+  ArrayNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -51,6 +53,9 @@ export class Interpreter {
         break;
       case "VariableDeclaration":
         this.declaration(node);
+        break;
+      case "getSize":
+        this.getSize(node);
         break;
     }
   }
@@ -242,5 +247,28 @@ export class Interpreter {
 
   private getNext(node: StatementNode): StatementNode | undefined {
     return node.nextId ? this.nodeMap.get(node.nextId) : undefined;
+  }
+
+  private getSize(node: GetSizeNode): void {
+    if (node.target.type !== "Identifier") {
+      throw new Error("Object is missing");
+    }
+
+    let arrayVariable = node.object;
+    const variableForSave = node.target;
+
+    if (arrayVariable.type === "Identifier") {
+      arrayVariable = this.variableData.getVariableByName(arrayVariable.name);
+    }
+
+    if (arrayVariable.type === "Array" || arrayVariable.type === "String") {
+      this.variableData.changeVariable(variableForSave.name, {
+        type: "Literal",
+        value: arrayVariable.value.length,
+      });
+      return;
+    }
+
+    throw new Error(`Cannot get size of ${arrayVariable.type}`);
   }
 }
