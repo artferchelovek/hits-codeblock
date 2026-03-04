@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function BaseBlockLayout({ node, children }: Props) {
-  const { removeStatement, activeNode } = useBlockContext();
+  const { removeStatement, activeNode, errorNode } = useBlockContext();
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
@@ -35,11 +35,13 @@ export default function BaseBlockLayout({ node, children }: Props) {
     data: { type: "output", nodeId: node.id },
   });
 
+  const isError = errorNode.node === node.id;
+
   return (
     <div
       ref={setNodeRef}
       {...attributes}
-      className={`${styles.block} ${activeNode === node.id ? styles.active : ""}`}
+      className={`${styles.block} ${activeNode === node.id ? styles.active : ""} ${isError ? styles.error : ""}`}
       style={{
         position: "absolute",
         left: node.x,
@@ -55,6 +57,10 @@ export default function BaseBlockLayout({ node, children }: Props) {
           id={`input-${node.id}`}
           className={styles.inputConnector}
         />
+      )}
+
+      {isError && (
+        <div className={styles.errorMessage}>{errorNode.message}</div>
       )}
 
       <div className={styles.label}>

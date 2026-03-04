@@ -1,5 +1,32 @@
 import type { ExpressionNode } from "../types/ast.ts";
 
+export function parseNameAndSize(input: string): {
+  name: string;
+  size?: ExpressionNode;
+} {
+  const trimmed = input.trim();
+
+  const match = trimmed.match(
+    /^([a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*)\s*\((.*)\)$/,
+  );
+
+  if (match) {
+    const name = match[1];
+    const sizeContent = match[2].trim();
+
+    try {
+      return {
+        name: name,
+        size: sizeContent ? stringToExpression(sizeContent) : undefined,
+      };
+    } catch (e) {
+      return { name: trimmed };
+    }
+  }
+
+  return { name: trimmed };
+}
+
 export function stringToExpression(expression: string): ExpressionNode {
   let current = expression.trim();
 
@@ -96,6 +123,7 @@ export function stringToExpression(expression: string): ExpressionNode {
       ),
     };
   }
+
   if (current.endsWith("]")) {
     let depth = 0;
     let bracketIndex = -1;
@@ -108,51 +136,36 @@ export function stringToExpression(expression: string): ExpressionNode {
         break;
       }
     }
+
     if (current.startsWith("[") && current.endsWith("]")) {
       const elements: ExpressionNode[] = [];
-
       current
-
         .slice(1, -1)
-
         .split(",")
-
         .forEach((elem) => {
-          elements.push(stringToExpression(elem));
+          if (elem.trim()) elements.push(stringToExpression(elem));
         });
 
-      return {
-        type: "Array",
-
-        value: elements,
-      };
+      return { type: "Array", value: elements };
     }
 
     if (bracketIndex > 0) {
-      const objectPart = current.slice(0, bracketIndex).trim();
-      const propertyPart = current.slice(bracketIndex + 1, -1).trim();
-
       return {
         type: "MemberExpression",
-        object: stringToExpression(objectPart),
-        index: stringToExpression(propertyPart),
+        object: stringToExpression(current.slice(0, bracketIndex).trim()),
+        index: stringToExpression(current.slice(bracketIndex + 1, -1).trim()),
       };
     }
   }
-  const regNumber = /^-?\d+(\.\d+)?$/;
-  const regVariable =
-    /^([a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)(,[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*)*$/;
-  const regBoolean = /^(?:true|false)$/;
 
   const trimmedCurrent = current.trim();
-
-  if (regBoolean.test(trimmedCurrent)) {
-    return { type: "Boolean", value: trimmedCurrent == "true" };
+  if (/^(?:true|false)$/.test(trimmedCurrent)) {
+    return { type: "Boolean", value: trimmedCurrent === "true" };
   }
-  if (regNumber.test(trimmedCurrent)) {
+  if (/^-?\d+(\.\d+)?$/.test(trimmedCurrent)) {
     return { type: "Literal", value: Number(trimmedCurrent) };
   }
-  if (regVariable.test(trimmedCurrent)) {
+  if (/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/.test(trimmedCurrent)) {
     return { type: "Identifier", name: trimmedCurrent };
   }
 
@@ -189,29 +202,22 @@ function getPriority(operator: string): number {
 export function renderExpression(expr: ExpressionNode): string {
   switch (expr.type) {
     case "Literal":
-      return String(expr.value);
-
+      return `${expr.value}`;
     case "String":
       return `"${expr.value}"`;
-
     case "Identifier":
       return expr.name;
-
     case "Boolean":
       return String(expr.value);
-
-    case "BinaryExpression": {
-      const leftStr = renderExpression(expr.left);
-      const rightStr = renderExpression(expr.right);
-      return `${leftStr} ${expr.operator} ${rightStr}`;
-    }
-
+    case "BinaryExpression":
+      return `${renderExpression(expr.left)} ${expr.operator} ${renderExpression(expr.right)}`;
     case "Array":
       return `[${expr.value.map((i) => renderExpression(i)).join(", ")}]`;
     case "MemberExpression":
       return `${renderExpression(expr.object)}[${renderExpression(expr.index)}]`;
-
     default:
       return "";
   }
 }
+
+console.log(parseNameAndSize("a(12+b-32)"));

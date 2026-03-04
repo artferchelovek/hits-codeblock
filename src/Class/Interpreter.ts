@@ -283,4 +283,8 @@ export class Interpreter {
 
     throw new Error(`Cannot get size of ${arrayVariable.type}`);
   }
+
+  private getNext(node: StatementNode): StatementNode | undefined {
+    return node.nextId ? this.nodeMap.get(node.nextId) : undefined;
+  }
 }

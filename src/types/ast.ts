@@ -35,13 +35,13 @@ export interface BreakNode extends BaseNodeAttributes {
 export interface VariableDeclarationNode extends BaseNodeAttributes {
   type: "VariableDeclaration";
   name: string;
+  size?: ExpressionNode;
 }
 
 export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
   target: ExpressionNode;
   value: ExpressionNode;
-  size?: LiteralNode | BinaryExpressionNode;
 }
 
 export interface ForNode extends BaseNodeAttributes {
