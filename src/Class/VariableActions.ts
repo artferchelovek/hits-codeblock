@@ -1,6 +1,7 @@
 import type {
   ArrayNode,
   ExpressionNode,
+  LiteralNode,
   VariableForDebug,
 } from "../types/ast.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -24,7 +25,7 @@ export class VariableActions {
     }
   }
 
-  public declareVariable(variableName: string): void {
+  public declareVariable(variableName: string, size?: ExpressionNode): void {
     const variable = this.workScope().get(variableName);
     const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
 
@@ -33,8 +34,16 @@ export class VariableActions {
     }
 
     if (regVariable.test(variableName)) {
+      if (size) {
+        const arr: ExpressionNode[] = [];
+        const sizeArray = Calculate(size, this) as LiteralNode;
+        for (let i = 0; i < sizeArray.value; i++) {
+          arr.push({ type: "Literal", value: 0 });
+        }
+        this.workScope().set(variableName, { type: "Array", value: arr });
+        return;
+      }
       this.workScope().set(variableName, { type: "Literal", value: 0 });
-      return;
     }
 
     throw new Error("Unsupported variable name: " + variableName);
@@ -56,6 +65,18 @@ export class VariableActions {
           return;
         }
 
+        if (variableValue.type === "Array" && variable.type === "Array") {
+          if (variable.value.length >= variableValue.value.length) {
+            const newArray = variable.value;
+            for (let i = 0; i < variableValue.value.length; i++) {
+              newArray[i] = variableValue.value[i];
+            }
+
+            variableValue = { type: "Array", value: newArray };
+          } else {
+            throw new Error("Excess elements in array initializer");
+          }
+        }
         this.variableData[i].set(
           variableName,
           this.countExpression(variableValue),

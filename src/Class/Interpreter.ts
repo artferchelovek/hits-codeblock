@@ -78,6 +78,12 @@ export class Interpreter {
 
   private declaration(node: VariableDeclarationNode): void {
     const names = node.name.split(",").map((item) => item.trim());
+
+    if (node.size) {
+      this.variableData.declareVariable(names[0], node.size);
+      return;
+    }
+
     for (const name of names) {
       this.variableData.declareVariable(name);
     }
@@ -209,7 +215,11 @@ export class Interpreter {
           variableAll: this.variableData.getAll(),
           print:
             currentNode.type === "Print"
-              ? Calculate(currentNode.expression, this.variableData)
+              ? currentNode.expression.type === "Identifier"
+                ? this.variableData.getVariableByName(
+                    currentNode.expression.name,
+                  )
+                : Calculate(currentNode.expression, this.variableData)
               : undefined,
         };
 
@@ -255,10 +265,6 @@ export class Interpreter {
 
     this.variableData.deleteScope();
     return result;
-  }
-
-  private getNext(node: StatementNode): StatementNode | undefined {
-    return node.nextId ? this.nodeMap.get(node.nextId) : undefined;
   }
 
   private getSize(node: GetSizeNode): void {
