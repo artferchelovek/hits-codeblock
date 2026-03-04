@@ -122,7 +122,10 @@ export class Interpreter {
         const currentNode = this.nodeMap.get(node.bodyId);
 
         if (currentNode) {
-          yield* this.action(currentNode);
+          const res = yield* this.action(currentNode);
+          if (res === "Break") {
+            break;
+          }
         }
       }
 
@@ -152,7 +155,10 @@ export class Interpreter {
       if (node.bodyId) {
         const currentNode = this.nodeMap.get(node.bodyId);
         if (currentNode) {
-          yield* this.action(currentNode);
+          const result = yield* this.action(currentNode);
+          if (result === "Break") {
+            break;
+          }
         }
       }
       condition = Calculate(node.condition, this.variableData).value;
@@ -162,10 +168,13 @@ export class Interpreter {
 
   private *action(
     startNode: StatementNode,
-  ): Generator<DataForDebug, void, void> {
+  ): Generator<DataForDebug, "Break" | void, void> {
     let currentNode: StatementNode | undefined = startNode;
     try {
       while (currentNode) {
+        if (currentNode.type === "BreakNode") {
+          return "Break";
+        }
         if (currentNode.type === "For") {
           yield* this.forNode(currentNode);
 
@@ -174,7 +183,10 @@ export class Interpreter {
         }
 
         if (currentNode.type === "If") {
-          yield* this.ifNode(currentNode);
+          const result = yield* this.ifNode(currentNode);
+          if (result === "Break") {
+            return "Break";
+          }
 
           currentNode = this.getNext(currentNode);
           continue;
@@ -188,6 +200,7 @@ export class Interpreter {
           currentNode = this.getNext(currentNode);
           continue;
         }
+
         this.actionsNode(currentNode);
 
         yield {
@@ -206,8 +219,10 @@ export class Interpreter {
       throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
     }
   }
-  private *ifNode(node: IfNode) {
+
+  private *ifNode(node: IfNode): Generator<DataForDebug, "Break" | void, void> {
     this.variableData.newScope();
+    let result: "Break" | void;
 
     const trueId = node.trueId;
     const falseId = node.falseId;
@@ -226,18 +241,20 @@ export class Interpreter {
       if (trueId) {
         const nextActions = this.nodeMap.get(trueId);
         if (nextActions) {
-          yield* this.action(nextActions);
+          result = yield* this.action(nextActions);
         }
       }
     } else {
       if (falseId) {
         const nextActions = this.nodeMap.get(falseId);
         if (nextActions) {
-          yield* this.action(nextActions);
+          result = yield* this.action(nextActions);
         }
       }
     }
+
     this.variableData.deleteScope();
+    return result;
   }
 
   private getNext(node: StatementNode): StatementNode | undefined {
