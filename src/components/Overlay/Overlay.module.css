@@ -46,6 +46,23 @@
             justify-content: center;
             border-radius: 50px;
 
+
+            flex-grow: 1;
+
+            box-shadow: var(--md-sys-elevation);
+
+            cursor: pointer;
+
+            opacity: 80%;
+        }
+
+        .break {
+            background: var(--md-sys-color-error);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50px;
+
             flex-grow: 1;
 
             box-shadow: var(--md-sys-elevation);
