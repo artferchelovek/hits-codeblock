@@ -124,7 +124,9 @@ export interface BinaryExpressionNode {
     | "<="
     | "=="
     | "!="
-    | "=";
+    | "="
+    | "&&"
+    | "||";
   left: ExpressionNode;
   right: ExpressionNode;
 }

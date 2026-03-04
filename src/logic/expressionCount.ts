@@ -141,6 +141,11 @@ export function Calculate(
       case "!=":
         result = left_value != right_value;
         break;
+      case "&&":
+        result = left_value && right_value;
+        break;
+      case "||":
+        result = left_value || right_value;
     }
 
     if (typeof result === "number") {

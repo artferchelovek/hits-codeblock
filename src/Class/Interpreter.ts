@@ -54,7 +54,7 @@ export class Interpreter {
     }
   }
 
-  private assignment(node: AssignmentNode): void | Errors {
+  private assignment(node: AssignmentNode): void {
     if (node.target.type === "MemberExpression") {
       const index = node.target.index;
       const name =
