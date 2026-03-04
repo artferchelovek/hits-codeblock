@@ -142,3 +142,12 @@ export interface GetSizeNode extends BaseNodeAttributes {
   target: ExpressionNode;
   object: ExpressionNode;
 }
+
+export interface DataForDebug {
+  type: typesForDebug;
+  id: string;
+  variableAll: VariableForDebug[];
+  print?: ExpressionNode;
+}
+
+export type typesForDebug = StatementNode["type"];
