@@ -6,7 +6,7 @@ import type {
   ProgramNode,
   StatementNode,
   VariableDeclarationNode,
-  Errors,
+  WhileNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -54,8 +54,8 @@ export class Interpreter {
     }
   }
 
-  private assignment(node: AssignmentNode): void | Errors {
-    if (typeof node.target !== "string") {
+  private assignment(node: AssignmentNode): void {
+    if (node.target.type === "MemberExpression") {
       const index = node.target.index;
       const name =
         node.target.object.type === "Identifier" ? node.target.object.name : "";
@@ -64,12 +64,11 @@ export class Interpreter {
       return;
     }
 
-    if (node.value.type === "Array") {
-      this.variableData.changeVariable(node.target, node.value);
-      return;
+    if (node.target.type === "Identifier") {
+      this.variableData.changeVariable(node.target.name, node.value);
+    } else {
+      throw new Error("Unsuitable type for assignment");
     }
-
-    this.variableData.changeVariable(node.target, node.value);
   }
 
   private declaration(node: VariableDeclarationNode): void {
@@ -138,6 +137,28 @@ export class Interpreter {
     this.variableData.deleteScope();
   }
 
+  private *whileNode(node: WhileNode) {
+    this.variableData.newScope();
+    let condition = Calculate(node.condition, this.variableData).value;
+
+    yield {
+      type: node.type,
+      id: node.id,
+      variableAll: this.variableData.getAll(),
+    };
+
+    while (condition) {
+      if (node.bodyId) {
+        const currentNode = this.nodeMap.get(node.bodyId);
+        if (currentNode) {
+          yield* this.action(currentNode);
+        }
+      }
+      condition = Calculate(node.condition, this.variableData).value;
+    }
+    this.variableData.deleteScope();
+  }
+
   private *action(startNode: StatementNode) {
     let currentNode: StatementNode | undefined = startNode;
     try {
@@ -145,18 +166,21 @@ export class Interpreter {
         if (currentNode.type === "For") {
           yield* this.forNode(currentNode);
 
-          currentNode = currentNode.nextId
-            ? this.nodeMap.get(currentNode.nextId)
-            : undefined;
+          currentNode = this.getNext(currentNode);
           continue;
         }
 
         if (currentNode.type === "If") {
           yield* this.ifNode(currentNode);
 
-          currentNode = currentNode.nextId
-            ? this.nodeMap.get(currentNode.nextId)
-            : undefined;
+          currentNode = this.getNext(currentNode);
+          continue;
+        }
+
+        if (currentNode.type === "While") {
+          yield* this.whileNode(currentNode);
+
+          currentNode = this.getNext(currentNode);
           continue;
         }
         this.actionsNode(currentNode);
@@ -180,9 +204,7 @@ export class Interpreter {
           };
         }
 
-        currentNode = currentNode.nextId
-          ? this.nodeMap.get(currentNode.nextId)
-          : undefined;
+        currentNode = this.getNext(currentNode);
       }
     } catch (e) {
       throw new Error(e.message, { cause: currentNode?.id });
@@ -220,5 +242,9 @@ export class Interpreter {
       }
     }
     this.variableData.deleteScope();
+  }
+
+  private getNext(node: StatementNode): StatementNode | undefined {
+    return node.nextId ? this.nodeMap.get(node.nextId) : undefined;
   }
 }

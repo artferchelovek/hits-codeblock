@@ -63,7 +63,7 @@ export function stringToExpression(expression: string): ExpressionNode {
 
     if (stack === 0) {
       const twoCharOp = current.substring(i, i + 2);
-      const ops2 = [">=", "<=", "==", "!="];
+      const ops2 = [">=", "<=", "==", "!=", "&&", "||"];
       if (ops2.includes(twoCharOp)) {
         const priority = getPriority(twoCharOp);
         if (priority <= minPriority) {
@@ -162,6 +162,10 @@ export function stringToExpression(expression: string): ExpressionNode {
 function getPriority(operator: string): number {
   switch (operator) {
     case "=":
+      return -3;
+    case "||":
+      return -2;
+    case "&&":
       return -1;
     case "==":
     case ">":
