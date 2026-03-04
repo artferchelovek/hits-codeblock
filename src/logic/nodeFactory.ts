@@ -52,7 +52,7 @@ export function createNode(type: string): StatementNode {
         type: "If",
         condition: {
           type: "BinaryExpression",
-          operator: "<=",
+          operator: ">",
           left: {
             type: "Identifier",
             name: "a",
@@ -135,7 +135,7 @@ export function createNode(type: string): StatementNode {
         type: "While",
         condition: {
           type: "BinaryExpression",
-          operator: "<=",
+          operator: ">",
           left: {
             type: "Identifier",
             name: "i",

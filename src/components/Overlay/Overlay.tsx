@@ -39,10 +39,11 @@ const Topper = ({
   addPrintable: (node: string) => void;
   clearPrintable: () => void;
 }) => {
-  const { program, setActiveNode } = useBlockContext();
+  const { program, setActiveNode, setErrorNode } = useBlockContext();
 
   const startProgram = () => {
     clearPrintable();
+    setErrorNode(null, undefined);
     if (compilator) {
       console.log(JSON.stringify(program, null, 2));
       try {
@@ -54,14 +55,27 @@ const Topper = ({
             addPrintable(renderExpression(result.value.print));
           result = runtime.next();
         }
+
+        console.log(result.value.time);
       } catch (error) {
-        alert(error);
+        if (
+          error instanceof Error &&
+          error.cause &&
+          typeof error.cause === "object" &&
+          "BlockId" in error.cause
+        ) {
+          setErrorNode(
+            (error.cause as { BlockId: string }).BlockId,
+            error.message,
+          );
+        }
       }
     }
   };
 
   const startProgramSlowly = () => {
     clearPrintable();
+    setErrorNode(null, undefined);
     try {
       const runtime = new Interpreter(program).interpreter();
 
