@@ -7,6 +7,8 @@ import type {
   StatementNode,
   VariableDeclarationNode,
   WhileNode,
+  DataForDebug,
+  GetSizeNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -51,6 +53,9 @@ export class Interpreter {
       case "VariableDeclaration":
         this.declaration(node);
         break;
+      case "getSize":
+        this.getSize(node);
+        break;
     }
   }
 
@@ -72,13 +77,9 @@ export class Interpreter {
   }
 
   private declaration(node: VariableDeclarationNode): void {
-    try {
-      const names = node.name.split(",").map((item) => item.trim());
-      for (const name of names) {
-        this.variableData.declareVariable(name);
-      }
-    } catch (e) {
-      throw new Error(`Unable to declare assignment: `); //???
+    const names = node.name.split(",").map((item) => item.trim());
+    for (const name of names) {
+      this.variableData.declareVariable(name);
     }
   }
 
@@ -121,7 +122,10 @@ export class Interpreter {
         const currentNode = this.nodeMap.get(node.bodyId);
 
         if (currentNode) {
-          yield* this.action(currentNode);
+          const res = yield* this.action(currentNode);
+          if (res === "Break") {
+            break;
+          }
         }
       }
 
@@ -151,7 +155,10 @@ export class Interpreter {
       if (node.bodyId) {
         const currentNode = this.nodeMap.get(node.bodyId);
         if (currentNode) {
-          yield* this.action(currentNode);
+          const result = yield* this.action(currentNode);
+          if (result === "Break") {
+            break;
+          }
         }
       }
       condition = Calculate(node.condition, this.variableData).value;
@@ -159,10 +166,15 @@ export class Interpreter {
     this.variableData.deleteScope();
   }
 
-  private *action(startNode: StatementNode) {
+  private *action(
+    startNode: StatementNode,
+  ): Generator<DataForDebug, "Break" | void, void> {
     let currentNode: StatementNode | undefined = startNode;
     try {
       while (currentNode) {
+        if (currentNode.type === "BreakNode") {
+          return "Break";
+        }
         if (currentNode.type === "For") {
           yield* this.forNode(currentNode);
 
@@ -171,47 +183,46 @@ export class Interpreter {
         }
 
         if (currentNode.type === "If") {
-          yield* this.ifNode(currentNode);
+          const result = yield* this.ifNode(currentNode);
+          if (result === "Break") {
+            return "Break";
+          }
 
           currentNode = this.getNext(currentNode);
           continue;
         }
 
         if (currentNode.type === "While") {
-          yield* this.whileNode(currentNode);
+          if (Calculate(currentNode.condition, this.variableData)) {
+            yield* this.whileNode(currentNode);
+          }
 
           currentNode = this.getNext(currentNode);
           continue;
         }
-        this.actionsNode(currentNode);
-        if (currentNode.type === "Print") {
-          const print =
-            currentNode.expression.type === "Identifier"
-              ? this.variableData.getVariableByName(currentNode.expression.name)
-              : Calculate(currentNode.expression, this.variableData);
 
-          yield {
-            type: currentNode.type,
-            id: currentNode.id,
-            variableAll: this.variableData.getAll(),
-            print: print,
-          };
-        } else {
-          yield {
-            type: currentNode.type,
-            id: currentNode.id,
-            variableAll: this.variableData.getAll(),
-          };
-        }
+        this.actionsNode(currentNode);
+
+        yield {
+          type: currentNode.type,
+          id: currentNode.id,
+          variableAll: this.variableData.getAll(),
+          print:
+            currentNode.type === "Print"
+              ? Calculate(currentNode.expression, this.variableData)
+              : undefined,
+        };
 
         currentNode = this.getNext(currentNode);
       }
     } catch (e) {
-      throw new Error(e.message, { cause: currentNode?.id });
+      throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
     }
   }
-  private *ifNode(node: IfNode) {
+
+  private *ifNode(node: IfNode): Generator<DataForDebug, "Break" | void, void> {
     this.variableData.newScope();
+    let result: "Break" | void;
 
     const trueId = node.trueId;
     const falseId = node.falseId;
@@ -230,21 +241,46 @@ export class Interpreter {
       if (trueId) {
         const nextActions = this.nodeMap.get(trueId);
         if (nextActions) {
-          yield* this.action(nextActions);
+          result = yield* this.action(nextActions);
         }
       }
     } else {
       if (falseId) {
         const nextActions = this.nodeMap.get(falseId);
         if (nextActions) {
-          yield* this.action(nextActions);
+          result = yield* this.action(nextActions);
         }
       }
     }
+
     this.variableData.deleteScope();
+    return result;
   }
 
   private getNext(node: StatementNode): StatementNode | undefined {
     return node.nextId ? this.nodeMap.get(node.nextId) : undefined;
+  }
+
+  private getSize(node: GetSizeNode): void {
+    if (node.target.type !== "Identifier") {
+      throw new Error("Object is missing");
+    }
+
+    let arrayVariable = node.object;
+    const variableForSave = node.target;
+
+    if (arrayVariable.type === "Identifier") {
+      arrayVariable = this.variableData.getVariableByName(arrayVariable.name);
+    }
+
+    if (arrayVariable.type === "Array" || arrayVariable.type === "String") {
+      this.variableData.changeVariable(variableForSave.name, {
+        type: "Literal",
+        value: arrayVariable.value.length,
+      });
+      return;
+    }
+
+    throw new Error(`Cannot get size of ${arrayVariable.type}`);
   }
 }
