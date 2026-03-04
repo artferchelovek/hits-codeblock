@@ -207,7 +207,7 @@ export class Interpreter {
         currentNode = this.getNext(currentNode);
       }
     } catch (e) {
-      throw new Error(e.message, { cause: currentNode?.id });
+      throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
     }
   }
   private *ifNode(node: IfNode) {
