@@ -7,6 +7,7 @@ import type {
   StatementNode,
   VariableDeclarationNode,
   WhileNode,
+  DataForDebug,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -159,7 +160,9 @@ export class Interpreter {
     this.variableData.deleteScope();
   }
 
-  private *action(startNode: StatementNode) {
+  private *action(
+    startNode: StatementNode,
+  ): Generator<DataForDebug, void, void> {
     let currentNode: StatementNode | undefined = startNode;
     try {
       while (currentNode) {
@@ -178,31 +181,24 @@ export class Interpreter {
         }
 
         if (currentNode.type === "While") {
-          yield* this.whileNode(currentNode);
+          if (Calculate(currentNode.condition, this.variableData)) {
+            yield* this.whileNode(currentNode);
+          }
 
           currentNode = this.getNext(currentNode);
           continue;
         }
         this.actionsNode(currentNode);
-        if (currentNode.type === "Print") {
-          const print =
-            currentNode.expression.type === "Identifier"
-              ? this.variableData.getVariableByName(currentNode.expression.name)
-              : Calculate(currentNode.expression, this.variableData);
 
-          yield {
-            type: currentNode.type,
-            id: currentNode.id,
-            variableAll: this.variableData.getAll(),
-            print: print,
-          };
-        } else {
-          yield {
-            type: currentNode.type,
-            id: currentNode.id,
-            variableAll: this.variableData.getAll(),
-          };
-        }
+        yield {
+          type: currentNode.type,
+          id: currentNode.id,
+          variableAll: this.variableData.getAll(),
+          print:
+            currentNode.type === "Print"
+              ? Calculate(currentNode.expression, this.variableData)
+              : undefined,
+        };
 
         currentNode = this.getNext(currentNode);
       }
