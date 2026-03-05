@@ -126,11 +126,16 @@ export class Interpreter {
     while (condition.value) {
       if (node.bodyId) {
         const currentNode = this.nodeMap.get(node.bodyId);
-
-        if (currentNode) {
-          const res = yield* this.action(currentNode);
-          if (res === "Break") {
-            break;
+        try {
+          if (currentNode) {
+            const res = yield* this.action(currentNode);
+            if (res === "Break") {
+              break;
+            }
+          }
+        } catch (e) {
+          if (e instanceof Error) {
+            throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
           }
         }
       }
@@ -160,10 +165,16 @@ export class Interpreter {
     while (condition) {
       if (node.bodyId) {
         const currentNode = this.nodeMap.get(node.bodyId);
-        if (currentNode) {
-          const result = yield* this.action(currentNode);
-          if (result === "Break") {
-            break;
+        try {
+          if (currentNode) {
+            const result = yield* this.action(currentNode);
+            if (result === "Break") {
+              break;
+            }
+          }
+        } catch (e) {
+          if (e instanceof Error) {
+            throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
           }
         }
       }
@@ -226,7 +237,12 @@ export class Interpreter {
         currentNode = this.getNext(currentNode);
       }
     } catch (e) {
-      throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
+      if (e instanceof Error) {
+        if (e.cause && typeof e.cause === "object" && "BlockId" in e.cause) {
+          throw e;
+        }
+        throw new Error(e.message, { cause: { BlockId: currentNode?.id } });
+      }
     }
   }
 

@@ -148,6 +148,7 @@ export interface DataForDebug {
   id: string;
   variableAll: VariableForDebug[];
   print?: ExpressionNode;
+  time?: number;
 }
 
 export type typesForDebug = StatementNode["type"];

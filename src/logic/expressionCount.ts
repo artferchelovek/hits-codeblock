@@ -13,7 +13,7 @@ function add(
 ): number | string {
   if (typeof last_exp === "number" && typeof first_exp === "number") {
     return last_exp + first_exp;
-  } else if (last_exp === "string" && typeof first_exp === "string") {
+  } else if (typeof last_exp === "string" && typeof first_exp === "string") {
     return first_exp + last_exp;
   }
 

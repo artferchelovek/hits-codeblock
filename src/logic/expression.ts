@@ -60,6 +60,7 @@ export function stringToExpression(expression: string): ExpressionNode {
   let minPriority = Infinity;
   let operatorIndex = -1;
   let foundOperator = "";
+  let bracketStack = 0;
 
   for (let i = 0; i < current.length; i++) {
     const char = current[i];
@@ -87,8 +88,16 @@ export function stringToExpression(expression: string): ExpressionNode {
       stack--;
       continue;
     }
+    if (char === "]") {
+      bracketStack--;
+      continue;
+    }
+    if (char === "[") {
+      bracketStack++;
+      continue;
+    }
 
-    if (stack === 0) {
+    if (stack === 0 && bracketStack === 0) {
       const twoCharOp = current.substring(i, i + 2);
       const ops2 = [">=", "<=", "==", "!=", "&&", "||"];
       if (ops2.includes(twoCharOp)) {
@@ -125,19 +134,7 @@ export function stringToExpression(expression: string): ExpressionNode {
   }
 
   if (current.endsWith("]")) {
-    let depth = 0;
-    let bracketIndex = -1;
-
-    for (let i = current.length - 1; i >= 0; i--) {
-      if (current[i] === "]") depth++;
-      if (current[i] === "[") depth--;
-      if (depth === 0) {
-        bracketIndex = i;
-        break;
-      }
-    }
-
-    if (current.startsWith("[") && current.endsWith("]")) {
+    if (current.startsWith("[")) {
       const elements: ExpressionNode[] = [];
       current
         .slice(1, -1)
@@ -149,11 +146,25 @@ export function stringToExpression(expression: string): ExpressionNode {
       return { type: "Array", value: elements };
     }
 
-    if (bracketIndex > 0) {
+    let depth = 0;
+    let openbracketIndex = -1;
+
+    for (let i = current.length - 1; i >= 0; i--) {
+      if (current[i] === "]") depth++;
+      if (current[i] === "[") depth--;
+      if (depth === 0) {
+        openbracketIndex = i;
+        break;
+      }
+    }
+
+    if (openbracketIndex > 0) {
       return {
         type: "MemberExpression",
-        object: stringToExpression(current.slice(0, bracketIndex).trim()),
-        index: stringToExpression(current.slice(bracketIndex + 1, -1).trim()),
+        object: stringToExpression(current.slice(0, openbracketIndex).trim()),
+        index: stringToExpression(
+          current.slice(openbracketIndex + 1, -1).trim(),
+        ),
       };
     }
   }
@@ -165,7 +176,7 @@ export function stringToExpression(expression: string): ExpressionNode {
   if (/^-?\d+(\.\d+)?$/.test(trimmedCurrent)) {
     return { type: "Literal", value: Number(trimmedCurrent) };
   }
-  if (/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/.test(trimmedCurrent)) {
+  if (/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/.test(trimmedCurrent)) {
     return { type: "Identifier", name: trimmedCurrent };
   }
 
@@ -219,5 +230,3 @@ export function renderExpression(expr: ExpressionNode): string {
       return "";
   }
 }
-
-console.log(parseNameAndSize("a(12+b-32)"));
