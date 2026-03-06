@@ -16,7 +16,11 @@ export default function Overlay() {
   return (
     <div className={styles.overlay}>
       <Topper runner={runner} />
-      {runner.isDebug ? <DebugInterface /> : <Palette />}
+      {runner.isDebug ? (
+        <DebugInterface variables={runner.debugVariables} />
+      ) : (
+        <Palette />
+      )}
       <Terminal compilator={compilator} program={program} />
     </div>
   );

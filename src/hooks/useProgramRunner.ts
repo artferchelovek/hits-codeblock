@@ -3,7 +3,7 @@ import { useCompileContext } from "../context/CompileContext.tsx";
 import { useCallback, useRef, useState } from "react";
 import { Interpreter } from "../Class/Interpreter.ts";
 import { renderExpression } from "../logic/expression.ts";
-import type { ExpressionNode } from "../types/ast.ts";
+import type { ExpressionNode, VariableForDebug } from "../types/ast.ts";
 
 export const useProgramRunner = () => {
   const { program, setActiveNode, setErrorNode } = useBlockContext();
@@ -11,6 +11,7 @@ export const useProgramRunner = () => {
 
   const [isRunning, setIsRunning] = useState(false);
   const [isDebug, setIsDebug] = useState(false);
+  const [debugVariables, setDebugVariables] = useState<VariableForDebug[]>([]);
 
   const runtimeRef = useRef<ReturnType<Interpreter["interpreter"]> | null>(
     null,
@@ -41,6 +42,7 @@ export const useProgramRunner = () => {
     setIsRunning(false);
     setIsDebug(false);
     setActiveNode(null);
+    setDebugVariables([]);
     runtimeRef.current = null;
   }, [setActiveNode]);
 
@@ -69,7 +71,7 @@ export const useProgramRunner = () => {
 
         if (counter % 50 === 0) await new Promise((res) => setTimeout(res, 0));
       }
-      runTime = result.value?.time || 0;
+      runTime = result.value.time || 0;
     } catch (e) {
       sendError(e);
     } finally {
@@ -100,6 +102,11 @@ export const useProgramRunner = () => {
         stop();
       } else {
         setActiveNode(result.value.id);
+
+        if (result.value.variableAll) {
+          setDebugVariables(result.value.variableAll);
+        }
+
         if (result.value.type === "Print") {
           addPrintable(renderExpression(result.value.print as ExpressionNode));
         }
@@ -117,5 +124,6 @@ export const useProgramRunner = () => {
     debug,
     stop,
     nextStep,
+    debugVariables,
   };
 };
