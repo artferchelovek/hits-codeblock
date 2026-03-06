@@ -37,7 +37,12 @@ interface BlockContextType {
   refreshProgram: (newProgram: ProgramNode) => void;
   updateProgramName: (programName: string) => void;
   activeNode: string | null;
+  errorNode: {
+    node: string | null;
+    message: string | undefined;
+  };
   setActiveNode: (node: string | null) => void;
+  setErrorNode: (node: string | null, message: string | undefined) => void;
 }
 
 const BlockContext = createContext<BlockContextType | null>(null);
@@ -59,6 +64,17 @@ export const BlockContextProvider = ({
     body: [],
   });
   const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [errorNode, setErrorNodeState] = useState<{
+    node: string | null;
+    message: string | undefined;
+  }>({
+    node: null,
+    message: undefined,
+  });
+
+  const setErrorNode = (node: string | null, message: string | undefined) => {
+    setErrorNodeState({ node, message });
+  };
 
   const addStatement = (node: StatementNode) => {
     console.log("addStatement", node);
@@ -128,6 +144,8 @@ export const BlockContextProvider = ({
         updateProgramName,
         activeNode,
         setActiveNode,
+        errorNode,
+        setErrorNode,
       }}
     >
       {children}

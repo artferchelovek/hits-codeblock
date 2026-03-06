@@ -1,6 +1,7 @@
 import type {
   ArrayNode,
   ExpressionNode,
+  LiteralNode,
   VariableForDebug,
 } from "../types/ast.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -24,15 +25,27 @@ export class VariableActions {
     }
   }
 
-  public declareVariable(variableName: string): void {
+  public declareVariable(variableName: string, size?: ExpressionNode): void {
     const variable = this.workScope().get(variableName);
-    const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
+    const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/;
 
     if (variable) {
       throw new Error(`Variable already declared: ${variableName}`);
     }
 
     if (regVariable.test(variableName)) {
+      if (size) {
+        const arr: ExpressionNode[] = [];
+        const sizeArray = Calculate(size, this) as LiteralNode;
+        if (!Number.isInteger(sizeArray.value)) {
+          throw new Error("Size must be an integer");
+        }
+        for (let i = 0; i < sizeArray.value; i++) {
+          arr.push({ type: "Literal", value: 0 });
+        }
+        this.workScope().set(variableName, { type: "Array", value: arr });
+        return;
+      }
       this.workScope().set(variableName, { type: "Literal", value: 0 });
       return;
     }
@@ -49,11 +62,27 @@ export class VariableActions {
       const variable = this.variableData[i].get(variableName);
 
       if (variable) {
-        if (index && variable?.type === "Array") {
+        if (variable.type !== "Array" && variableValue.type === "Array") {
+          throw new Error(`Variable "${variableName}" does not array: `);
+        }
+
+        if (index && variable.type === "Array") {
           const indexValue = this.checkAndGetIndex(index, variableName);
           const array = variable as ArrayNode;
           array.value[indexValue] = Calculate(variableValue, this);
           return;
+        }
+
+        if (variableValue.type === "Array" && variable.type === "Array") {
+          if (variable.value.length >= variableValue.value.length) {
+            const newArray = variable.value;
+            for (let i = 0; i < variableValue.value.length; i++) {
+              newArray[i] = variableValue.value[i];
+            }
+            variableValue = { type: "Array", value: newArray };
+          } else {
+            throw new Error("Excess elements in array initializer");
+          }
         }
 
         this.variableData[i].set(
@@ -64,7 +93,7 @@ export class VariableActions {
       }
     }
 
-    throw new Error("Variable is not defined");
+    throw new Error(`Variable "${variableName}" is not defined `);
   }
 
   public getVariableByName(
@@ -75,7 +104,7 @@ export class VariableActions {
       if (this.variableData[i].has(variableName)) {
         const variable = this.variableData[i].get(variableName);
 
-        if (index && index.type === "Literal") {
+        if (index) {
           const indexValue = this.checkAndGetIndex(index, variableName);
           let indexElem: ExpressionNode;
           if (
@@ -95,7 +124,7 @@ export class VariableActions {
         }
       }
     }
-    throw new Error("Variable is not defined");
+    throw new Error(`Variable "${variableName}" is not defined`);
   }
 
   public getAll(): VariableForDebug[] {
@@ -116,8 +145,8 @@ export class VariableActions {
     const variable = this.getVariableByName(variableName);
     const indexValue = Calculate(index, this).value;
 
-    if (typeof indexValue !== "number") {
-      throw new Error(`Indices must be number`);
+    if (typeof indexValue !== "number" || !Number.isInteger(indexValue)) {
+      throw new Error(`Indices must be integer number`);
     }
     if (variable?.type !== "Array" && variable?.type !== "String") {
       throw new Error(`Variable "${variableName}" does not array`);
