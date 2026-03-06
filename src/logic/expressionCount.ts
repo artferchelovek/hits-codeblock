@@ -28,7 +28,7 @@ function subtract(
     return first_exp - last_exp;
   }
 
-  throw new Error(`Cannot subtract ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot subtract ${typeof first_exp} - ${typeof last_exp}`);
 }
 
 function multiply(
@@ -52,7 +52,7 @@ function modulo(
     return Number(first_exp) % Number(last_exp);
   }
 
-  throw new Error(`Cannot modulo ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot modulo ${typeof first_exp} % ${typeof last_exp}`);
 }
 
 function divide(
@@ -67,7 +67,7 @@ function divide(
     return Number(first_exp) / Number(last_exp);
   }
 
-  throw new Error(`Cannot divide ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot divide ${typeof first_exp} / ${typeof last_exp}`);
 }
 
 export function Calculate(
