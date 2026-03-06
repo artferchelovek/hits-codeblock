@@ -27,12 +27,26 @@ export function parseNameAndSize(input: string): {
   return { name: trimmed };
 }
 
+function countSymbol(str: string, sym: string): number {
+  let count = 0;
+  for (const i of str) {
+    if (i === sym) {
+      count++;
+    }
+  }
+  return count;
+}
+
 export function stringToExpression(expression: string): ExpressionNode {
   let current = expression.trim();
 
   if (
-    (current.startsWith('"') && current.endsWith('"')) ||
-    (current.startsWith("'") && current.endsWith("'"))
+    (current.startsWith('"') &&
+      current.endsWith('"') &&
+      countSymbol(current, '"') === 2) ||
+    (current.startsWith("'") &&
+      current.endsWith("'") &&
+      countSymbol(current, "'") === 2)
   ) {
     return {
       type: "String",
