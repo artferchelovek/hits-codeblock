@@ -11,20 +11,25 @@ import {
 import Terminal from "./Terminal.tsx";
 import { renderExpression } from "../../logic/expression.ts";
 import { useRef, useState } from "react";
+import SvgBug from "../../svg/SvgBug.tsx";
+import DebugInterface from "./Debug.tsx";
 
 export default function Overlay() {
   const { compilator, updateStatus, addPrintable, clearPrintable } =
     useCompileContext();
   const { program } = useBlockContext();
+
+  const [isDebug, setIsDebug] = useState<boolean>(false);
   return (
     <div className={styles.overlay}>
       <Topper
+        setIsDebug={setIsDebug}
         compilator={compilator}
         updateStatus={updateStatus}
         addPrintable={addPrintable}
         clearPrintable={clearPrintable}
       />
-      <Palette />
+      {isDebug ? <DebugInterface /> : <Palette />}
       <Terminal compilator={compilator} program={program} />
     </div>
   );
@@ -33,11 +38,13 @@ export default function Overlay() {
 const Topper = ({
   addPrintable,
   clearPrintable,
+  setIsDebug,
 }: {
   compilator: Compilator;
   updateStatus: () => void;
   addPrintable: (node: string) => void;
   clearPrintable: () => void;
+  setIsDebug: (value: ((prevState: boolean) => boolean) | boolean) => void;
 }) => {
   const { program, setActiveNode, setErrorNode } = useBlockContext();
   const [isRunning, setIsRunning] = useState<boolean>(false);
@@ -146,11 +153,11 @@ const Topper = ({
           </div>
           <div
             onClick={() => {
-              startProgramSlowly();
+              setIsDebug(true);
             }}
             className={styles.stop}
           >
-            <SvgStart fill={"var(--md-sys-color-on-secondary)"} />
+            <SvgBug fill={"var(--md-sys-color-on-secondary)"} />
           </div>
         </>
       )}

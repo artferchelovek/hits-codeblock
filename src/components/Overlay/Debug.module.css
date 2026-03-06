@@ -1,0 +1,17 @@
+.debug {
+    box-shadow: var(--md-sys-elevation);
+
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 20px;
+
+    flex-grow: 1;
+
+    display: flex;
+    gap: 10px;
+
+    .label {
+        margin: 10px;
+        color: var(--md-sys-color-on-surface);
+        font-weight: bold;
+    }
+}

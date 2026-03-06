@@ -18,8 +18,6 @@ export default function Terminal({
         value={`codeshell/${program.name}.cshl\n${compilator.printable
           .map((elem) => `${elem}`)
           .join("\n")}`}
-        cols={30}
-        rows={10}
       ></textarea>
     </div>
   );
