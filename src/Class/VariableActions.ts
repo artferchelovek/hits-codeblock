@@ -37,6 +37,9 @@ export class VariableActions {
       if (size) {
         const arr: ExpressionNode[] = [];
         const sizeArray = Calculate(size, this) as LiteralNode;
+        if (!Number.isInteger(sizeArray.value)) {
+          throw new Error("Size must be an integer");
+        }
         for (let i = 0; i < sizeArray.value; i++) {
           arr.push({ type: "Literal", value: 0 });
         }
