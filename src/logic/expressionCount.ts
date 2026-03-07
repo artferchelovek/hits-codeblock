@@ -38,7 +38,7 @@ function multiply(
   if (typeof last_exp === "number" && typeof first_exp === "number") {
     return first_exp * last_exp;
   }
-  throw new Error(`Cannot add ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot add ${typeof first_exp} * ${typeof last_exp}`);
 }
 
 function modulo(

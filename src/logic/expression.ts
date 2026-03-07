@@ -136,7 +136,7 @@ export function stringToExpression(expression: string): ExpressionNode {
     }
   }
 
-  if (operatorIndex !== -1) {
+  if (operatorIndex !== -1 && !/^-?\d+(\.\d+)?$/.test(current.trim())) {
     return {
       type: "BinaryExpression",
       operator: foundOperator as any,
