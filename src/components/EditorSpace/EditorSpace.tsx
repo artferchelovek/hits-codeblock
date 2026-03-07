@@ -1,4 +1,4 @@
-import { DndContext, useDroppable } from "@dnd-kit/core";
+import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext";
 import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
@@ -6,7 +6,6 @@ import React, { useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
 import type { ForNode, IfNode, WhileNode } from "../../types/ast.ts";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";
-import { createNode } from "../../logic/nodeFactory.ts";
 
 export type ActiveLineData = {
   startX: number;
@@ -16,7 +15,7 @@ export type ActiveLineData = {
 } | null;
 
 interface EditorSpaceProps {
-  setPanMain?: (
+  setPanMain: (
     value:
       | ((prevState: { x: number; y: number }) => { x: number; y: number })
       | {
@@ -24,14 +23,14 @@ interface EditorSpaceProps {
           y: number;
         },
   ) => void;
+  panMain: { x: number; y: number };
 }
 
-export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
-  const { program, updateStatement, addStatement } = useBlockContext();
+export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
+  const { program, updateStatement } = useBlockContext();
 
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
-  const [pan, setPan] = useState({ x: -5000, y: -5000 });
   const [isPanning, setIsPanning] = useState(false);
 
   const { setNodeRef } = useDroppable({
@@ -80,69 +79,6 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
     });
   }
 
-  const dragEnd = (event: any) => {
-    const { active, over, delta } = event;
-
-    if (active.data.current?.type === "node") {
-      updateStatement(active.id, (node) => ({
-        ...node,
-        x: node.x + delta.x,
-        y: node.y + delta.y,
-      }));
-    }
-
-    if (!over) {
-      setActiveConnection(null);
-      return;
-    }
-
-    if (String(active.id).startsWith("palette-")) {
-      const type = active.data.current?.type;
-      if (type) {
-        const newNode = createNode(type);
-        newNode.x = delta.x - pan.x;
-        newNode.y = delta.y - pan.y;
-        addStatement(newNode);
-      }
-    }
-
-    const connectionType = active.data.current?.type;
-    const isOutput = ["output", "output1", "output2"].includes(connectionType);
-    if (isOutput && over.data.current?.type === "input") {
-      connectNodes(
-        active.data.current.nodeId,
-        over.data.current.nodeId,
-        connectionType,
-      );
-    }
-
-    setActiveConnection(null);
-  };
-
-  const dragMove = (event: { active: any; delta: any }) => {
-    const { active, delta } = event;
-    const type = active.data.current?.type;
-
-    if (type === "output" || type === "output1" || type === "output2") {
-      const sourceId = active.data.current.nodeId;
-
-      let connectorId = `out-${sourceId}`;
-      if (type === "output1") connectorId = `out-true-${sourceId}`;
-      if (type === "output2") connectorId = `out-false-${sourceId}`;
-
-      const startPos = getConnectorPos(connectorId, containerRef);
-
-      if (startPos) {
-        setActiveConnection({
-          startX: startPos.x - pan.x,
-          startY: startPos.y - pan.y,
-          toX: startPos.x + delta.x - pan.x,
-          toY: startPos.y + delta.y - pan.y,
-        });
-      }
-    }
-  };
-
   function handleMouseDown(e: React.MouseEvent) {
     if (
       e.button !== 1 &&
@@ -161,17 +97,10 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
     const dx = e.clientX - lastMouse.current.x;
     const dy = e.clientY - lastMouse.current.y;
 
-    setPan((prev) => ({
+    setPanMain((prev) => ({
       x: prev.x + dx,
       y: prev.y + dy,
     }));
-
-    if (setPanMain) {
-      setPanMain((prev) => ({
-        x: prev.x + dx,
-        y: prev.y + dy,
-      }));
-    }
 
     lastMouse.current = { x: e.clientX, y: e.clientY };
   }
@@ -184,7 +113,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
     const dx = e.deltaX;
     const dy = e.deltaY;
 
-    setPan((prev) => ({
+    setPanMain((prev) => ({
       x: prev.x - dx,
       y: prev.y - dy,
     }));
@@ -197,206 +126,240 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
     }
   };
 
+  useDndMonitor({
+    onDragMove(event) {
+      const { active, delta } = event;
+      const type = active.data.current?.type;
+
+      if (["output", "output1", "output2"].includes(type)) {
+        const sourceId = active.data.current?.nodeId;
+        let connectorId = `out-${sourceId}`;
+        if (type === "output1") connectorId = `out-true-${sourceId}`;
+        if (type === "output2") connectorId = `out-false-${sourceId}`;
+
+        const startPos = getConnectorPos(connectorId, containerRef);
+        if (startPos) {
+          setActiveConnection({
+            startX: startPos.x - panMain.x,
+            startY: startPos.y - panMain.y,
+            toX: startPos.x + delta.x - panMain.x,
+            toY: startPos.y + delta.y - panMain.y,
+          });
+        }
+      }
+    },
+    onDragEnd(event) {
+      const { active, over } = event;
+      const connectionType = active.data.current?.type;
+      const isOutput = ["output", "output1", "output2"].includes(
+        connectionType,
+      );
+
+      if (isOutput && over?.data.current?.type === "input") {
+        connectNodes(
+          active.data.current?.nodeId,
+          over.data.current.nodeId,
+          connectionType,
+        );
+      }
+      setActiveConnection(null);
+    },
+    onDragCancel() {
+      setActiveConnection(null);
+    },
+  });
+
   return (
-    <DndContext
-      onDragEnd={dragEnd}
-      onDragMove={dragMove}
-      onDragCancel={() => setActiveConnection(null)}
+    <div
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onWheel={handleWheel}
+      id="editor"
+      style={{
+        width: "100vw",
+        height: "100vh",
+        position: "relative",
+        overflow: "hidden",
+      }}
     >
       <div
-        ref={containerRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
-        id="editor"
         style={{
-          width: "100vw",
-          height: "100vh",
-          position: "relative",
-          overflow: "hidden",
+          position: "absolute",
+          transform: `translate(${panMain.x}px, ${panMain.y}px)`,
+          width: "10000px",
+          height: "10000px",
+          pointerEvents: "none",
+          touchAction: "none",
         }}
       >
-        <div
+        <svg
+          className={styles.connections}
           style={{
             position: "absolute",
-            transform: `translate(${pan.x}px, ${pan.y}px)`,
+            top: 0,
+            left: 0,
             width: "10000px",
             height: "10000px",
+            overflow: "visible",
             pointerEvents: "none",
-            touchAction: "none",
+            zIndex: 1,
           }}
         >
-          <svg
-            className={styles.connections}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "10000px",
-              height: "10000px",
-              overflow: "visible",
-              pointerEvents: "none",
-              zIndex: 999,
-            }}
-          >
-            {activeConnection && (
-              <ConnectionLine
-                startX={activeConnection.startX}
-                startY={activeConnection.startY}
-                endX={activeConnection.toX}
-                endY={activeConnection.toY}
-                color="rgba(204, 229, 255, 0.6)"
-              />
-            )}
+          {activeConnection && (
+            <ConnectionLine
+              startX={activeConnection.startX}
+              startY={activeConnection.startY}
+              endX={activeConnection.toX}
+              endY={activeConnection.toY}
+              color="rgba(204, 229, 255, 0.6)"
+            />
+          )}
 
-            {program.body.map((node) => {
-              const lines = [];
+          {program.body.map((node) => {
+            const lines = [];
 
-              if (node.nextId) {
-                const start = getConnectorPos(`out-${node.id}`, containerRef);
+            if (node.nextId) {
+              const start = getConnectorPos(`out-${node.id}`, containerRef);
+              const end = getConnectorPos(`input-${node.nextId}`, containerRef);
+              if (start && end) {
+                lines.push(
+                  <ConnectionLine
+                    key={`${node.id}-next`}
+                    startX={start.x - panMain.x}
+                    startY={start.y - panMain.y}
+                    endX={end.x - panMain.x}
+                    endY={end.y - panMain.y}
+                  />,
+                );
+              }
+            }
+
+            if (node.type === "For") {
+              const forNode = node as ForNode;
+
+              if (forNode.bodyId) {
+                const start = getConnectorPos(
+                  `out-true-${node.id}`,
+                  containerRef,
+                );
                 const end = getConnectorPos(
-                  `input-${node.nextId}`,
+                  `input-${forNode.bodyId}`,
                   containerRef,
                 );
                 if (start && end) {
                   lines.push(
                     <ConnectionLine
-                      key={`${node.id}-next`}
-                      startX={start.x - pan.x}
-                      startY={start.y - pan.y}
-                      endX={end.x - pan.x}
-                      endY={end.y - pan.y}
+                      key={`${node.id}-true`}
+                      startX={start.x - panMain.x}
+                      startY={start.y - panMain.y}
+                      endX={end.x - panMain.x}
+                      endY={end.y - panMain.y}
+                      color="green"
+                    />,
+                  );
+                }
+              }
+            }
+
+            if (node.type === "While") {
+              const WhileNode = node as WhileNode;
+
+              if (WhileNode.bodyId) {
+                const start = getConnectorPos(
+                  `out-true-${node.id}`,
+                  containerRef,
+                );
+                const end = getConnectorPos(
+                  `input-${WhileNode.bodyId}`,
+                  containerRef,
+                );
+                if (start && end) {
+                  lines.push(
+                    <ConnectionLine
+                      key={`${node.id}-true`}
+                      startX={start.x - panMain.x}
+                      startY={start.y - panMain.y}
+                      endX={end.x - panMain.x}
+                      endY={end.y - panMain.y}
+                      color="green"
+                    />,
+                  );
+                }
+              }
+            }
+
+            if (node.type === "If") {
+              const ifNode = node as IfNode;
+
+              if (ifNode.trueId) {
+                const start = getConnectorPos(
+                  `out-true-${node.id}`,
+                  containerRef,
+                );
+                const end = getConnectorPos(
+                  `input-${ifNode.trueId}`,
+                  containerRef,
+                );
+                if (start && end) {
+                  lines.push(
+                    <ConnectionLine
+                      key={`${node.id}-true`}
+                      startX={start.x - panMain.x}
+                      startY={start.y - panMain.y}
+                      endX={end.x - panMain.x}
+                      endY={end.y - panMain.y}
+                      color="green"
                     />,
                   );
                 }
               }
 
-              if (node.type === "For") {
-                const forNode = node as ForNode;
-
-                if (forNode.bodyId) {
-                  const start = getConnectorPos(
-                    `out-true-${node.id}`,
-                    containerRef,
+              if (ifNode.falseId) {
+                const start = getConnectorPos(
+                  `out-false-${node.id}`,
+                  containerRef,
+                );
+                const end = getConnectorPos(
+                  `input-${ifNode.falseId}`,
+                  containerRef,
+                );
+                if (start && end) {
+                  lines.push(
+                    <ConnectionLine
+                      key={`${node.id}-false`}
+                      startX={start.x - panMain.x}
+                      startY={start.y - panMain.y}
+                      endX={end.x - panMain.x}
+                      endY={end.y - panMain.y}
+                      color="red"
+                    />,
                   );
-                  const end = getConnectorPos(
-                    `input-${forNode.bodyId}`,
-                    containerRef,
-                  );
-                  if (start && end) {
-                    lines.push(
-                      <ConnectionLine
-                        key={`${node.id}-true`}
-                        startX={start.x - pan.x}
-                        startY={start.y - pan.y}
-                        endX={end.x - pan.x}
-                        endY={end.y - pan.y}
-                        color="green"
-                      />,
-                    );
-                  }
                 }
               }
+            }
 
-              if (node.type === "While") {
-                const WhileNode = node as WhileNode;
+            return lines;
+          })}
+        </svg>
 
-                if (WhileNode.bodyId) {
-                  const start = getConnectorPos(
-                    `out-true-${node.id}`,
-                    containerRef,
-                  );
-                  const end = getConnectorPos(
-                    `input-${WhileNode.bodyId}`,
-                    containerRef,
-                  );
-                  if (start && end) {
-                    lines.push(
-                      <ConnectionLine
-                        key={`${node.id}-true`}
-                        startX={start.x - pan.x}
-                        startY={start.y - pan.y}
-                        endX={end.x - pan.x}
-                        endY={end.y - pan.y}
-                        color="green"
-                      />,
-                    );
-                  }
-                }
-              }
-
-              if (node.type === "If") {
-                const ifNode = node as IfNode;
-
-                if (ifNode.trueId) {
-                  const start = getConnectorPos(
-                    `out-true-${node.id}`,
-                    containerRef,
-                  );
-                  const end = getConnectorPos(
-                    `input-${ifNode.trueId}`,
-                    containerRef,
-                  );
-                  if (start && end) {
-                    lines.push(
-                      <ConnectionLine
-                        key={`${node.id}-true`}
-                        startX={start.x - pan.x}
-                        startY={start.y - pan.y}
-                        endX={end.x - pan.x}
-                        endY={end.y - pan.y}
-                        color="green"
-                      />,
-                    );
-                  }
-                }
-
-                if (ifNode.falseId) {
-                  const start = getConnectorPos(
-                    `out-false-${node.id}`,
-                    containerRef,
-                  );
-                  const end = getConnectorPos(
-                    `input-${ifNode.falseId}`,
-                    containerRef,
-                  );
-                  if (start && end) {
-                    lines.push(
-                      <ConnectionLine
-                        key={`${node.id}-false`}
-                        startX={start.x - pan.x}
-                        startY={start.y - pan.y}
-                        endX={end.x - pan.x}
-                        endY={end.y - pan.y}
-                        color="red"
-                      />,
-                    );
-                  }
-                }
-              }
-
-              return lines;
-            })}
-          </svg>
-
-          <div
-            ref={setNodeRef}
-            className={styles.editor}
-            style={{
-              width: "10000px",
-              height: "10000px",
-              position: "absolute",
-              pointerEvents: "all",
-            }}
-          >
-            {program.body.map((node) => (
-              <RenderNode key={node.id} node={node} />
-            ))}
-          </div>
+        <div
+          ref={setNodeRef}
+          className={styles.editor}
+          style={{
+            width: "10000px",
+            height: "10000px",
+            position: "absolute",
+            pointerEvents: "all",
+          }}
+        >
+          {program.body.map((node) => (
+            <RenderNode key={node.id} node={node} />
+          ))}
         </div>
       </div>
-    </DndContext>
+    </div>
   );
 }
