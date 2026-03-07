@@ -2,6 +2,7 @@ import { useDraggable, useDroppable } from "@dnd-kit/core";
 import styles from "./Block.module.css";
 import { type ReactNode } from "react";
 import { useBlockContext } from "../../../context/BlockContext.tsx";
+import SvgMove from "../../../svg/SvgMove.tsx";
 
 type Props = {
   node: {
@@ -75,7 +76,18 @@ export default function BaseBlockLayout({ node, children }: Props) {
           </div>
           <p className={styles.labelP}>{node.type}</p>
         </div>
-        <p {...listeners}>☰</p>
+        <p
+          {...listeners}
+          style={{
+            cursor: "grab",
+          }}
+        >
+          <SvgMove
+            width={20}
+            height={20}
+            fill="var(--md-sys-color-on-secondary-container)"
+          />
+        </p>
       </div>
 
       <div className={styles.content}>{children}</div>
