@@ -219,129 +219,57 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
           )}
 
           {program.body.map((node) => {
-            const lines = [];
+            const renderLink = (
+              fromConnectorId: string,
+              toNodeId: string | null,
+              color?: string,
+            ) => {
+              if (!toNodeId) return null;
 
-            if (node.nextId) {
-              const start = getConnectorPos(`out-${node.id}`, containerRef);
-              const end = getConnectorPos(`input-${node.nextId}`, containerRef);
-              if (start && end) {
-                lines.push(
-                  <ConnectionLine
-                    key={`${node.id}-next`}
-                    startX={start.x - panMain.x}
-                    startY={start.y - panMain.y}
-                    endX={end.x - panMain.x}
-                    endY={end.y - panMain.y}
-                  />,
-                );
-              }
-            }
+              const start = getConnectorPos(fromConnectorId, containerRef);
+              const end = getConnectorPos(`input-${toNodeId}`, containerRef);
 
-            if (node.type === "For") {
-              const forNode = node as ForNode;
+              if (!start || !end) return null;
 
-              if (forNode.bodyId) {
-                const start = getConnectorPos(
-                  `out-true-${node.id}`,
-                  containerRef,
-                );
-                const end = getConnectorPos(
-                  `input-${forNode.bodyId}`,
-                  containerRef,
-                );
-                if (start && end) {
-                  lines.push(
-                    <ConnectionLine
-                      key={`${node.id}-true`}
-                      startX={start.x - panMain.x}
-                      startY={start.y - panMain.y}
-                      endX={end.x - panMain.x}
-                      endY={end.y - panMain.y}
-                      color="green"
-                    />,
-                  );
-                }
-              }
-            }
+              return (
+                <ConnectionLine
+                  key={`${fromConnectorId}-${toNodeId}`}
+                  startX={start.x - panMain.x}
+                  startY={start.y - panMain.y}
+                  endX={end.x - panMain.x}
+                  endY={end.y - panMain.y}
+                  color={color}
+                />
+              );
+            };
 
-            if (node.type === "While") {
-              const WhileNode = node as WhileNode;
+            return (
+              <React.Fragment key={node.id}>
+                {renderLink(`out-${node.id}`, node.nextId)}
 
-              if (WhileNode.bodyId) {
-                const start = getConnectorPos(
-                  `out-true-${node.id}`,
-                  containerRef,
-                );
-                const end = getConnectorPos(
-                  `input-${WhileNode.bodyId}`,
-                  containerRef,
-                );
-                if (start && end) {
-                  lines.push(
-                    <ConnectionLine
-                      key={`${node.id}-true`}
-                      startX={start.x - panMain.x}
-                      startY={start.y - panMain.y}
-                      endX={end.x - panMain.x}
-                      endY={end.y - panMain.y}
-                      color="green"
-                    />,
-                  );
-                }
-              }
-            }
+                {node.type === "If" && (
+                  <>
+                    {renderLink(
+                      `out-true-${node.id}`,
+                      (node as IfNode).trueId,
+                      "rgba(52,201,65,0.8)",
+                    )}
+                    {renderLink(
+                      `out-false-${node.id}`,
+                      (node as IfNode).falseId,
+                      "rgba(201,52,52,0.8)",
+                    )}
+                  </>
+                )}
 
-            if (node.type === "If") {
-              const ifNode = node as IfNode;
-
-              if (ifNode.trueId) {
-                const start = getConnectorPos(
-                  `out-true-${node.id}`,
-                  containerRef,
-                );
-                const end = getConnectorPos(
-                  `input-${ifNode.trueId}`,
-                  containerRef,
-                );
-                if (start && end) {
-                  lines.push(
-                    <ConnectionLine
-                      key={`${node.id}-true`}
-                      startX={start.x - panMain.x}
-                      startY={start.y - panMain.y}
-                      endX={end.x - panMain.x}
-                      endY={end.y - panMain.y}
-                      color="green"
-                    />,
-                  );
-                }
-              }
-
-              if (ifNode.falseId) {
-                const start = getConnectorPos(
-                  `out-false-${node.id}`,
-                  containerRef,
-                );
-                const end = getConnectorPos(
-                  `input-${ifNode.falseId}`,
-                  containerRef,
-                );
-                if (start && end) {
-                  lines.push(
-                    <ConnectionLine
-                      key={`${node.id}-false`}
-                      startX={start.x - panMain.x}
-                      startY={start.y - panMain.y}
-                      endX={end.x - panMain.x}
-                      endY={end.y - panMain.y}
-                      color="red"
-                    />,
-                  );
-                }
-              }
-            }
-
-            return lines;
+                {(node.type === "For" || node.type === "While") &&
+                  renderLink(
+                    `out-true-${node.id}`,
+                    (node as any).bodyId,
+                    "rgba(146,52,201,0.8)",
+                  )}
+              </React.Fragment>
+            );
           })}
         </svg>
 

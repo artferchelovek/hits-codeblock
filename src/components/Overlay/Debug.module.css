@@ -12,8 +12,6 @@
 
     overflow-y: auto;
 
-    font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
-
     .header {
         padding: 2px 6px;
         background: var(--md-sys-color-surface-container-high);
@@ -26,6 +24,7 @@
     }
 
     .gridContainer {
+
         padding: 8px 10px;
         overflow-y: auto;
 
@@ -45,6 +44,7 @@
             color: var(--md-sys-color-primary);
             font-weight: 500;
             white-space: nowrap;
+            font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
         }
 
         .separator {
@@ -56,6 +56,7 @@
             color: var(--md-sys-color-tertiary);
             word-break: break-all;
             padding-left: 4px;
+            font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
         }
 
         .empty {
