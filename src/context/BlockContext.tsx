@@ -1,18 +1,48 @@
 import React, { createContext, useContext, useState } from "react";
-import type { ProgramNode, StatementNode } from "../types/ast.ts";
+import type {
+  AssignmentNode,
+  BreakNode,
+  ForNode,
+  GetSizeNode,
+  IfNode,
+  PrintNode,
+  ProgramNode,
+  StartNode,
+  StatementNode,
+  VariableDeclarationNode,
+  WhileNode,
+} from "../types/ast.ts";
 
 interface BlockContextType {
   program: ProgramNode;
-  addStatement: (parentId: string | null, node: StatementNode) => void;
+  addStatement: (node: StatementNode) => void;
   updateStatement: (
     id: string,
-    updater: (node: StatementNode) => StatementNode,
+    updater: (
+      n: StatementNode,
+    ) =>
+      | VariableDeclarationNode
+      | AssignmentNode
+      | ForNode
+      | WhileNode
+      | IfNode
+      | PrintNode
+      | StartNode
+      | GetSizeNode
+      | BreakNode,
   ) => void;
   removeStatement: (id: string) => void;
   removeProgram: () => void;
   getProgram: () => ProgramNode;
   refreshProgram: (newProgram: ProgramNode) => void;
   updateProgramName: (programName: string) => void;
+  activeNode: string | null;
+  errorNode: {
+    node: string | null;
+    message: string | undefined;
+  };
+  setActiveNode: (node: string | null) => void;
+  setErrorNode: (node: string | null, message: string | undefined) => void;
 }
 
 const BlockContext = createContext<BlockContextType | null>(null);
@@ -33,18 +63,22 @@ export const BlockContextProvider = ({
     name: "NewProgram",
     body: [],
   });
+  const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [errorNode, setErrorNodeState] = useState<{
+    node: string | null;
+    message: string | undefined;
+  }>({
+    node: null,
+    message: undefined,
+  });
 
-  const addStatement = (parentId: string | null, node: StatementNode) => {
-    console.log("addStatement", parentId, node);
+  const setErrorNode = (node: string | null, message: string | undefined) => {
+    setErrorNodeState({ node, message });
+  };
+
+  const addStatement = (node: StatementNode) => {
     setProgram((prev) => {
-      if (!parentId) {
-        return { ...prev, body: [...prev.body, node] };
-      }
-
-      return {
-        ...prev,
-        body: prev.body,
-      };
+      return { ...prev, body: [...prev.body, node] };
     });
   };
 
@@ -107,6 +141,10 @@ export const BlockContextProvider = ({
         getProgram,
         refreshProgram,
         updateProgramName,
+        activeNode,
+        setActiveNode,
+        errorNode,
+        setErrorNode,
       }}
     >
       {children}

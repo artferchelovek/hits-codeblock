@@ -15,25 +15,33 @@ export type StatementNode =
   | VariableDeclarationNode
   | AssignmentNode
   | ForNode
+  | WhileNode
   | IfNode
   | PrintNode
-  | StartNode;
+  | StartNode
+  | BreakNode
+  | GetSizeNode;
 
 export interface StartNode extends BaseNodeAttributes {
   type: "StartNode";
   nextId: string | null;
 }
 
+export interface BreakNode extends BaseNodeAttributes {
+  type: "BreakNode";
+  nextId: string | null;
+}
+
 export interface VariableDeclarationNode extends BaseNodeAttributes {
   type: "VariableDeclaration";
   name: string;
+  size?: ExpressionNode;
 }
 
 export interface AssignmentNode extends BaseNodeAttributes {
   type: "Assignment";
-  target: string | MemberExpressionNode; // ima peremennoi
+  target: ExpressionNode;
   value: ExpressionNode;
-  method?: string;
 }
 
 export interface ForNode extends BaseNodeAttributes {
@@ -41,6 +49,12 @@ export interface ForNode extends BaseNodeAttributes {
   iterator: ExpressionNode;
   from: ExpressionNode;
   to: ExpressionNode;
+  bodyId: string | null;
+}
+
+export interface WhileNode extends BaseNodeAttributes {
+  type: "While";
+  condition: BinaryExpressionNode;
   bodyId: string | null;
 }
 
@@ -62,7 +76,8 @@ export type ExpressionNode =
   | StringNode
   | BinaryExpressionNode
   | ArrayNode
-  | MemberExpressionNode;
+  | MemberExpressionNode
+  | BooleanNode;
 
 export interface LiteralNode {
   type: "Literal";
@@ -90,9 +105,28 @@ export interface StringNode {
   value: string;
 }
 
+export interface BooleanNode {
+  type: "Boolean";
+  value: boolean;
+}
+
 export interface BinaryExpressionNode {
   type: "BinaryExpression";
-  operator: "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==";
+  operator:
+    | "+"
+    | "-"
+    | "*"
+    | "/"
+    | "%"
+    | ">"
+    | "<"
+    | ">="
+    | "<="
+    | "=="
+    | "!="
+    | "="
+    | "&&"
+    | "||";
   left: ExpressionNode;
   right: ExpressionNode;
 }
@@ -102,3 +136,19 @@ export interface VariableForDebug {
   name: string;
   value: ExpressionNode;
 }
+
+export interface GetSizeNode extends BaseNodeAttributes {
+  type: "getSize";
+  target: ExpressionNode;
+  object: ExpressionNode;
+}
+
+export interface DataForDebug {
+  type: typesForDebug;
+  id: string;
+  variableAll: VariableForDebug[];
+  print?: ExpressionNode;
+  time?: number;
+}
+
+export type typesForDebug = StatementNode["type"];

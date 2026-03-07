@@ -11,6 +11,23 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
+
+    &.active {
+        background: var(--md-sys-color-tertiary-container);
+    }
+
+    &.error {
+        background: var(--md-sys-color-error-container);
+
+        .labelP {
+            color: var(--md-sys-color-on-error-container);
+        }
+
+        .buttonDelete {
+            background: var(--md-sys-color-error);
+            color: var(--md-sys-color-on-error);
+        }
+    }
 }
 
 .label {
@@ -118,4 +135,14 @@ select {
     height: fit-content;
     padding: 0 10px;
     backdrop-filter: blur(20px);
+}
+
+.errorMessage {
+    position: absolute;
+    top: -20px;
+    left: 0;
+    display: flex;
+    width: 100%;
+    text-align: center;
+    color: var(--md-sys-color-error)
 }

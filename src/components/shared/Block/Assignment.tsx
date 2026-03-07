@@ -15,15 +15,8 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
 
   useEffect(() => {
     setInputValue(renderExpression(node.value));
-  }, [node.value]);
-
-  useEffect(() => {
-    const renderTarget =
-      typeof node.target === "string"
-        ? node.target
-        : renderExpression(node.target);
-    setTargetValue(renderTarget);
-  }, [node.target]);
+    setTargetValue(renderExpression(node.target));
+  }, [node.value, node.target]);
 
   return (
     <BaseNodeLayout node={node}>
@@ -34,17 +27,15 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
 
           try {
             const parsed = stringToExpression(value);
-            if (parsed.type === "Identifier") {
-              updateStatement(node.id, (n) => ({
-                ...n,
-                target: parsed.name,
-              }));
-            } else if (parsed.type === "MemberExpression") {
-              updateStatement(node.id, (n) => ({
+
+            updateStatement(node.id, (n) => {
+              if (n.type !== "Assignment") return n;
+
+              return {
                 ...n,
                 target: parsed,
-              }));
-            }
+              };
+            });
           } catch {}
         }}
         value={targetValue}
@@ -62,10 +53,16 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
           try {
             const parsed = stringToExpression(value);
 
-            updateStatement(node.id, (n) => ({
-              ...n,
-              value: parsed,
-            }));
+            updateStatement(node.id, (n) => {
+              if (n.type !== "Assignment") {
+                return n;
+              }
+
+              return {
+                ...n,
+                value: parsed,
+              };
+            });
           } catch {}
         }}
         value={inputValue}

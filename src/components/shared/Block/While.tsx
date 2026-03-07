@@ -1,4 +1,4 @@
-import type { IfNode } from "../../../types/ast.ts";
+import type { WhileNode } from "../../../types/ast.ts";
 import TripleBlockLayout from "./TripleBlockLayout.tsx";
 import { useEffect, useState } from "react";
 import {
@@ -7,7 +7,7 @@ import {
 } from "../../../logic/expression.ts";
 import { useBlockContext } from "../../../context/BlockContext.tsx";
 
-export default function If({ node }: { node: IfNode }) {
+export default function While({ node }: { node: WhileNode }) {
   const { updateStatement } = useBlockContext();
 
   const [operator, setOperator] = useState<">" | "<" | ">=" | "<=" | "==">(">");
@@ -37,7 +37,7 @@ export default function If({ node }: { node: IfNode }) {
             const parsed = stringToExpression(value);
 
             updateStatement(node.id, (n) => {
-              if (n.type !== "If") return n;
+              if (n.type !== "While") return n;
 
               return {
                 ...n,
@@ -57,7 +57,7 @@ export default function If({ node }: { node: IfNode }) {
           setOperator(newOperator);
           try {
             updateStatement(node.id, (n) => {
-              if (n.type !== "If") return n;
+              if (n.type !== "While") return n;
 
               return {
                 ...n,
@@ -85,7 +85,7 @@ export default function If({ node }: { node: IfNode }) {
             const parsed = stringToExpression(value);
 
             updateStatement(node.id, (n) => {
-              if (n.type !== "If") return n;
+              if (n.type !== "While") return n;
 
               return {
                 ...n,

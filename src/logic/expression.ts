@@ -1,5 +1,32 @@
 import type { ExpressionNode } from "../types/ast.ts";
 
+export function parseNameAndSize(input: string): {
+  name: string;
+  size?: ExpressionNode;
+} {
+  const trimmed = input.trim();
+
+  const match = trimmed.match(
+    /^([a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*)\s*\((.*)\)$/,
+  );
+
+  if (match) {
+    const name = match[1];
+    const sizeContent = match[2].trim();
+
+    try {
+      return {
+        name: name,
+        size: sizeContent ? stringToExpression(sizeContent) : undefined,
+      };
+    } catch (e) {
+      return { name: trimmed };
+    }
+  }
+
+  return { name: trimmed };
+}
+
 export function stringToExpression(expression: string): ExpressionNode {
   let current = expression.trim();
 
@@ -11,45 +38,6 @@ export function stringToExpression(expression: string): ExpressionNode {
       type: "String",
       value: current.slice(1, -1),
     };
-  }
-
-  if (current.startsWith("[") && current.endsWith("]")) {
-    const elements: ExpressionNode[] = [];
-    current
-      .slice(1, -1)
-      .split(",")
-      .forEach((elem) => {
-        elements.push(stringToExpression(elem));
-      });
-    return {
-      type: "Array",
-      value: elements,
-    };
-  }
-
-  if (current.endsWith("]")) {
-    let depth = 0;
-    let bracketIndex = -1;
-
-    for (let i = current.length - 1; i >= 0; i--) {
-      if (current[i] === "]") depth++;
-      if (current[i] === "[") depth--;
-      if (depth === 0) {
-        bracketIndex = i;
-        break;
-      }
-    }
-
-    if (bracketIndex > 0) {
-      const objectPart = current.slice(0, bracketIndex).trim();
-      const propertyPart = current.slice(bracketIndex + 1, -1).trim();
-
-      return {
-        type: "MemberExpression",
-        object: stringToExpression(objectPart),
-        index: stringToExpression(propertyPart),
-      };
-    }
   }
 
   if (current[0] === "(" && current[current.length - 1] === ")") {
@@ -72,6 +60,7 @@ export function stringToExpression(expression: string): ExpressionNode {
   let minPriority = Infinity;
   let operatorIndex = -1;
   let foundOperator = "";
+  let bracketStack = 0;
 
   for (let i = 0; i < current.length; i++) {
     const char = current[i];
@@ -99,10 +88,18 @@ export function stringToExpression(expression: string): ExpressionNode {
       stack--;
       continue;
     }
+    if (char === "]") {
+      bracketStack--;
+      continue;
+    }
+    if (char === "[") {
+      bracketStack++;
+      continue;
+    }
 
-    if (stack === 0) {
+    if (stack === 0 && bracketStack === 0) {
       const twoCharOp = current.substring(i, i + 2);
-      const ops2 = [">=", "<=", "=="];
+      const ops2 = [">=", "<=", "==", "!=", "&&", "||"];
       if (ops2.includes(twoCharOp)) {
         const priority = getPriority(twoCharOp);
         if (priority <= minPriority) {
@@ -114,7 +111,7 @@ export function stringToExpression(expression: string): ExpressionNode {
         continue;
       }
 
-      if ("+-*/><%".includes(char)) {
+      if ("+-*/><%=".includes(char)) {
         const priority = getPriority(char);
         if (priority <= minPriority) {
           minPriority = priority;
@@ -136,14 +133,50 @@ export function stringToExpression(expression: string): ExpressionNode {
     };
   }
 
-  const regNumber = /^-?\d+(\.\d+)?$/;
-  const regVariable = /^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-0_]*$/;
+  if (current.endsWith("]")) {
+    if (current.startsWith("[")) {
+      const elements: ExpressionNode[] = [];
+      current
+        .slice(1, -1)
+        .split(",")
+        .forEach((elem) => {
+          if (elem.trim()) elements.push(stringToExpression(elem));
+        });
+
+      return { type: "Array", value: elements };
+    }
+
+    let depth = 0;
+    let openbracketIndex = -1;
+
+    for (let i = current.length - 1; i >= 0; i--) {
+      if (current[i] === "]") depth++;
+      if (current[i] === "[") depth--;
+      if (depth === 0) {
+        openbracketIndex = i;
+        break;
+      }
+    }
+
+    if (openbracketIndex > 0) {
+      return {
+        type: "MemberExpression",
+        object: stringToExpression(current.slice(0, openbracketIndex).trim()),
+        index: stringToExpression(
+          current.slice(openbracketIndex + 1, -1).trim(),
+        ),
+      };
+    }
+  }
 
   const trimmedCurrent = current.trim();
-  if (regNumber.test(trimmedCurrent)) {
+  if (/^(?:true|false)$/.test(trimmedCurrent)) {
+    return { type: "Boolean", value: trimmedCurrent === "true" };
+  }
+  if (/^-?\d+(\.\d+)?$/.test(trimmedCurrent)) {
     return { type: "Literal", value: Number(trimmedCurrent) };
   }
-  if (regVariable.test(trimmedCurrent)) {
+  if (/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/.test(trimmedCurrent)) {
     return { type: "Identifier", name: trimmedCurrent };
   }
 
@@ -152,11 +185,18 @@ export function stringToExpression(expression: string): ExpressionNode {
 
 function getPriority(operator: string): number {
   switch (operator) {
+    case "=":
+      return -3;
+    case "||":
+      return -2;
+    case "&&":
+      return -1;
     case "==":
     case ">":
     case "<":
     case ">=":
     case "<=":
+    case "!=":
       return 1;
     case "+":
     case "-":
@@ -173,23 +213,19 @@ function getPriority(operator: string): number {
 export function renderExpression(expr: ExpressionNode): string {
   switch (expr.type) {
     case "Literal":
-      return String(expr.value);
-
+      return `${expr.value}`;
     case "String":
       return `"${expr.value}"`;
-
     case "Identifier":
       return expr.name;
-
+    case "Boolean":
+      return String(expr.value);
     case "BinaryExpression":
-      const leftStr = renderExpression(expr.left);
-      const rightStr = renderExpression(expr.right);
-      return `${leftStr} ${expr.operator} ${rightStr}`;
+      return `${renderExpression(expr.left)} ${expr.operator} ${renderExpression(expr.right)}`;
     case "Array":
       return `[${expr.value.map((i) => renderExpression(i)).join(", ")}]`;
     case "MemberExpression":
       return `${renderExpression(expr.object)}[${renderExpression(expr.index)}]`;
-
     default:
       return "";
   }

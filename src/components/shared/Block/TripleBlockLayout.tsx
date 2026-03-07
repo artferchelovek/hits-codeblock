@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function TripleBlockLayout({ node, children }: Props) {
-  const { removeStatement } = useBlockContext();
+  const { removeStatement, activeNode, errorNode } = useBlockContext();
 
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
     id: node.id,
@@ -51,11 +51,13 @@ export default function TripleBlockLayout({ node, children }: Props) {
     data: { type: "output2", nodeId: node.id },
   });
 
+  const isError = errorNode.node === node.id;
+
   return (
     <div
       ref={setNodeRef}
       {...attributes}
-      className={styles.block}
+      className={`${styles.block} ${activeNode === node.id ? styles.active : ""} ${isError ? styles.error : ""}`}
       style={{
         position: "absolute",
         left: node.x,
@@ -70,6 +72,10 @@ export default function TripleBlockLayout({ node, children }: Props) {
         id={`input-${node.id}`}
         className={styles.inputConnector}
       />
+
+      {isError && (
+        <div className={styles.errorMessage}>{errorNode.message}</div>
+      )}
 
       <div className={styles.label}>
         <div className={styles.labelFlex}>

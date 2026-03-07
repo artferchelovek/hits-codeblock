@@ -1,38 +1,30 @@
 import styles from "./Overlay.module.css";
-import SvgStart from "../../svg/SvgStart.tsx";
-import SvgStop from "../../svg/SvgStop.tsx";
 import { useDraggable } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext.tsx";
+import { useCompileContext } from "../../context/CompileContext.tsx";
+import Terminal from "./Terminal.tsx";
+import DebugInterface from "./Debug.tsx";
+import Topper from "./Topper.tsx";
+import { useProgramRunner } from "../../hooks/useProgramRunner.ts";
 
 export default function Overlay() {
+  const { compilator } = useCompileContext();
+  const { program } = useBlockContext();
+
+  const runner = useProgramRunner();
+
   return (
     <div className={styles.overlay}>
-      <Topper />
-      <Palette />
+      <Topper runner={runner} />
+      {runner.isDebug ? (
+        <DebugInterface variables={runner.debugVariables} />
+      ) : (
+        <Palette />
+      )}
+      <Terminal compilator={compilator} program={program} />
     </div>
   );
 }
-
-const Topper = () => {
-  const { program } = useBlockContext();
-
-  return (
-    <div className={styles.menu}>
-      <div className={styles.label}>CodeBlocks</div>
-      <div
-        className={styles.start}
-        onClick={() => {
-          console.log(JSON.stringify(program, null, 2)); //  debug
-        }}
-      >
-        <SvgStart fill="var(--md-sys-color-on-tertiary)" />
-      </div>
-      <div className={styles.stop}>
-        <SvgStop fill={"var(--md-sys-color-on-secondary)"} />
-      </div>
-    </div>
-  );
-};
 
 const Palette = () => {
   return (
@@ -41,8 +33,11 @@ const Palette = () => {
       <DraggableBlock type="VariableDeclaration" />
       <DraggableBlock type="Assignment" />
       <DraggableBlock type="Print" />
-      <DraggableBlock type={"If"} />
-      <DraggableBlock type={"For"} />
+      <DraggableBlock type="If" />
+      <DraggableBlock type="For" />
+      <DraggableBlock type="While" />
+      <DraggableBlock type="BreakNode" />
+      <DraggableBlock type="getSize" />
     </div>
   );
 };
