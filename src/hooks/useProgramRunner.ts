@@ -31,7 +31,7 @@ export const useProgramRunner = () => {
           error.message,
         );
       } else {
-        console.error(error);
+        alert(error);
       }
     },
     [setErrorNode],
