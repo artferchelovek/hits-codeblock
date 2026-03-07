@@ -77,7 +77,6 @@ export const BlockContextProvider = ({
   };
 
   const addStatement = (node: StatementNode) => {
-    console.log("addStatement", node);
     setProgram((prev) => {
       return { ...prev, body: [...prev.body, node] };
     });
