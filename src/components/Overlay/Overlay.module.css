@@ -74,6 +74,7 @@
     }
 
     .blocks {
+        max-height: 60%;
         display: flex;
         flex-direction: column;
         gap: 10px;
@@ -97,7 +98,7 @@
 .terminal {
     padding: 10px;
     border-radius: 20px;
-    height: 30%;
+    flex-grow: 1;
     margin-top: auto;
     display: flex;
     max-width: 300px;
@@ -125,5 +126,6 @@
     textarea {
         width: 100%;
         height: 100%;
+        outline: none;
     }
 }
