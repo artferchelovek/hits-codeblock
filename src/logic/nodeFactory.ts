@@ -11,8 +11,8 @@ export function createNode(type: string): StatementNode {
         id: generateId(),
         type: "VariableDeclaration",
         name: "",
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
       };
 
@@ -28,8 +28,8 @@ export function createNode(type: string): StatementNode {
           type: "Literal",
           value: 0,
         },
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
       };
 
@@ -41,8 +41,8 @@ export function createNode(type: string): StatementNode {
           type: "Literal",
           value: 0,
         },
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
       };
 
@@ -62,8 +62,8 @@ export function createNode(type: string): StatementNode {
             name: "b",
           },
         },
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
         trueId: null,
         falseId: null,
@@ -108,8 +108,8 @@ export function createNode(type: string): StatementNode {
             value: 10,
           },
         },
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
         bodyId: null,
       };
@@ -117,16 +117,16 @@ export function createNode(type: string): StatementNode {
       return {
         id: generateId(),
         type: "StartNode",
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
       };
     case "BreakNode":
       return {
         id: generateId(),
         type: "BreakNode",
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
       };
     case "While":
@@ -145,8 +145,8 @@ export function createNode(type: string): StatementNode {
             value: 1,
           },
         },
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
         bodyId: null,
       };
@@ -154,8 +154,8 @@ export function createNode(type: string): StatementNode {
       return {
         id: generateId(),
         type: "getSize",
-        x: 100,
-        y: 100,
+        x: 0,
+        y: 0,
         nextId: null,
         target: {
           type: "Identifier",
