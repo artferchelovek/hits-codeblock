@@ -238,6 +238,7 @@ export default function EditorSpace({ setPanMain }: EditorSpaceProps) {
               height: "10000px",
               overflow: "visible",
               pointerEvents: "none",
+              zIndex: 999,
             }}
           >
             {activeConnection && (
