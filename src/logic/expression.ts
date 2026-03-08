@@ -220,8 +220,26 @@ export function renderExpression(expr: ExpressionNode): string {
       return expr.name;
     case "Boolean":
       return String(expr.value);
-    case "BinaryExpression":
-      return `${renderExpression(expr.left)} ${expr.operator} ${renderExpression(expr.right)}`;
+    case "BinaryExpression": {
+      const currentPriority = getPriority(expr.operator);
+
+      let leftStr = renderExpression(expr.left);
+      if (expr.left.type === "BinaryExpression") {
+        if (getPriority(expr.left.operator) < currentPriority) {
+          leftStr = `(${leftStr})`;
+        }
+      }
+
+      let rightStr = renderExpression(expr.right);
+      if (expr.right.type === "BinaryExpression") {
+        const rightPriority = getPriority(expr.right.operator);
+        if (rightPriority <= currentPriority) {
+          rightStr = `(${rightStr})`;
+        }
+      }
+
+      return `${leftStr} ${expr.operator} ${rightStr}`;
+    }
     case "Array":
       return `[${expr.value.map((i) => renderExpression(i)).join(", ")}]`;
     case "MemberExpression":
