@@ -111,10 +111,14 @@ export class VariableActions {
             variable &&
             (variable.type === "Array" || variable.type === "String")
           ) {
+            const nodeDef: ExpressionNode = { type: "Literal", value: 0 };
             indexElem =
               variable.type === "Array"
-                ? variable.value[indexValue]
-                : { type: "String", value: variable.value[indexValue] };
+                ? (variable.value.at(indexValue) ?? nodeDef)
+                : {
+                    type: "String",
+                    value: variable.value.at(indexValue) ?? "",
+                  };
 
             return indexElem;
           }
@@ -151,7 +155,7 @@ export class VariableActions {
     if (variable?.type !== "Array" && variable?.type !== "String") {
       throw new Error(`Variable "${variableName}" does not array`);
     }
-    if (!(indexValue >= 0 && indexValue < variable.value.length)) {
+    if (!(Math.abs(indexValue) < variable.value.length)) {
       throw new Error(`${variable.type} index out of range`);
     }
     return indexValue;

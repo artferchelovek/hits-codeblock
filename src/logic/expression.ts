@@ -60,14 +60,26 @@ export function splitByComma(str: string): string[] {
   }
   result.push(str.slice(start));
   return result;
+function countSymbol(str: string, sym: string): number {
+  let count = 0;
+  for (const i of str) {
+    if (i === sym) {
+      count++;
+    }
+  }
+  return count;
 }
 
 export function stringToExpression(expression: string): ExpressionNode {
   const current = expression.trim();
 
   if (
-    (current.startsWith('"') && current.endsWith('"')) ||
-    (current.startsWith("'") && current.endsWith("'"))
+    (current.startsWith('"') &&
+      current.endsWith('"') &&
+      countSymbol(current, '"') === 2) ||
+    (current.startsWith("'") &&
+      current.endsWith("'") &&
+      countSymbol(current, "'") === 2)
   ) {
     return {
       type: "String",
@@ -157,7 +169,7 @@ export function stringToExpression(expression: string): ExpressionNode {
     }
   }
 
-  if (operatorIndex !== -1) {
+  if (operatorIndex !== -1 && !/^-?\d+(\.\d+)?$/.test(current.trim())) {
     return {
       type: "BinaryExpression",
       operator: foundOperator as any, // eslint-disable-line @typescript-eslint/no-explicit-any
