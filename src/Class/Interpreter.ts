@@ -9,6 +9,11 @@ import type {
   WhileNode,
   DataForDebug,
   GetSizeNode,
+  FunctionDeclarationNode,
+  CallNode,
+  CallExpressionNode,
+  ReturnNode,
+  ExpressionNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
@@ -17,6 +22,7 @@ export class Interpreter {
   private variableData = new VariableActions();
   private blockData: ProgramNode;
   readonly startNode: StatementNode | undefined;
+  private functionData = new Map<string, FunctionDeclarationNode>();
 
   private nodeMap: Map<string, StatementNode> = new Map<
     string,
@@ -42,6 +48,25 @@ export class Interpreter {
       });
     }
 
+    for (const block of this.blockData.body) {
+      if (block.type === "FunctionDeclaration") {
+        if (
+          block.params.find(
+            (item) => !/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/.test(item),
+          )
+        ) {
+          throw new Error(`Invalid function argument name`, {
+            cause: { BlockId: block.id },
+          });
+        }
+        if (block.nextId === null) {
+          throw new Error("Empty function", { cause: { BlockId: block.id } });
+        }
+
+        this.functionData.set(block.name, block);
+      }
+    }
+
     yield* this.action(currentNode);
 
     return { time: (Date.now() - timeStart) / 1000 };
@@ -57,6 +82,9 @@ export class Interpreter {
         break;
       case "getSize":
         this.getSize(node);
+        break;
+      case "Call":
+        this.callNodeAction(node);
         break;
     }
   }
@@ -183,13 +211,14 @@ export class Interpreter {
 
   private *action(
     startNode: StatementNode,
-  ): Generator<DataForDebug, "Break" | void, void> {
+  ): Generator<DataForDebug, "Break" | ReturnNode | void, void> {
     let currentNode: StatementNode | undefined = startNode;
     try {
       while (currentNode) {
         if (currentNode.type === "BreakNode") {
           return "Break";
         }
+
         if (currentNode.type === "For") {
           yield* this.forNode(currentNode);
 
@@ -202,6 +231,10 @@ export class Interpreter {
           if (result === "Break") {
             return "Break";
           }
+        }
+
+        if (currentNode.type === "Call") {
+          yield* this.callNodeAction(currentNode);
 
           currentNode = this.getNext(currentNode);
           continue;
@@ -212,6 +245,9 @@ export class Interpreter {
 
           currentNode = this.getNext(currentNode);
           continue;
+        }
+        if (currentNode.type === "Return") {
+          return currentNode;
         }
 
         this.actionsNode(currentNode);
@@ -237,7 +273,9 @@ export class Interpreter {
     }
   }
 
-  private *ifNode(node: IfNode): Generator<DataForDebug, "Break" | void, void> {
+  private *ifNode(
+    node: IfNode,
+  ): Generator<DataForDebug, "Break" | ReturnNode | void, void> {
     this.variableData.newScope();
     let result;
     let nextActions;
@@ -316,4 +354,79 @@ export class Interpreter {
       throw new Error(error.message, { cause: { BlockId: node.id } });
     }
   }
+
+  public *callNodeAction(node: CallNode | CallExpressionNode) {
+    const currentFunction = this.correctCallFunction(node);
+
+    yield {
+      type: currentFunction.type,
+      id: currentFunction.id,
+      variableAll: this.variableData.getAll(),
+    };
+
+    this.variableData.newScope();
+
+    for (let i = 0; i < node.args.length; i++) {
+      const arg = currentFunction.params[i];
+
+      const value = Calculate(node.args[i], this.variableData);
+
+      this.variableData.declareVariable(arg);
+      this.variableData.changeVariable(arg, value);
+    }
+
+    const startFunc = this.nodeMap.get(currentFunction.nextId);
+    if (startFunc) {
+      const res = yield* this.action(startFunc);
+      if (res && res !== "Break") {
+        return res;
+      }
+    }
+
+    this.variableData.deleteScope();
+  }
+
+  private correctCallFunction(node: CallNode | CallExpressionNode) {
+    const currentFunction = this.functionData.get(node.callee);
+
+    if (currentFunction === undefined) {
+      throw new Error(`Cannot call function: ${node.callee}`);
+    }
+    if (currentFunction.nextId === null) {
+      throw new Error(`Cannot call empty function: ${node.callee}`);
+    }
+
+    if (currentFunction.params.length < node.args.length) {
+      throw new Error(
+        `${currentFunction.name} takes 
+          ${currentFunction.params.length} arguments but 
+          ${node.args.length} were given`,
+      );
+    }
+
+    if (currentFunction.params.length > node.args.length) {
+      const missingArg = currentFunction.params.slice(node.args.length);
+      throw new Error(
+        `"${currentFunction.name}" missing ${missingArg.length} argument ${missingArg.toString()}`,
+      );
+    }
+    return currentFunction;
+  }
+
+  public *callExpression(node: CallExpressionNode) {
+    const currentFunction = this.functionData.get(node.callee);
+    if (currentFunction === undefined) {
+      return;
+    }
+    const res = yield* this.callNodeAction(node);
+    if (res) {
+      return res;
+    }
+    this.checkError(
+      new Error("Function does not have return value"),
+      currentFunction,
+    );
+  }
+
+  private calculate(node: ExpressionNode) {}
 }
