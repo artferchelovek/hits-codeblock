@@ -38,6 +38,9 @@ const Palette = () => {
       <DraggableBlock type="While" />
       <DraggableBlock type="BreakNode" />
       <DraggableBlock type="getSize" />
+      <DraggableBlock type="FunctionDeclaration" />
+      <DraggableBlock type="Call" />
+      <DraggableBlock type="Return" />
     </div>
   );
 };

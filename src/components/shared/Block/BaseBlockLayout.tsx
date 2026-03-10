@@ -57,7 +57,7 @@ export default function BaseBlockLayout({ node, children }: Props) {
       <div
         className={`${styles.block} ${activeNode === node.id ? styles.active : ""} ${isError ? styles.error : ""}`}
       >
-        {node.type !== "StartNode" && (
+        {node.type !== "StartNode" && node.type !== "FunctionDeclaration" && (
           <div
             ref={setInputRef}
             id={`input-${node.id}`}
@@ -79,7 +79,9 @@ export default function BaseBlockLayout({ node, children }: Props) {
             >
               -
             </div>
-            <p className={styles.labelP}>{node.type}</p>
+            <p className={styles.labelP}>
+              {node.type === "FunctionDeclaration" ? "Function" : node.type}
+            </p>
           </div>
           <p
             {...listeners}
@@ -97,13 +99,15 @@ export default function BaseBlockLayout({ node, children }: Props) {
 
         <div className={styles.content}>{children}</div>
 
-        <div
-          id={`out-${node.id}`}
-          ref={setOutRef}
-          {...outListeners}
-          {...outAttr}
-          className={styles.outputConnector}
-        />
+        {node.type !== "Return" && (
+          <div
+            id={`out-${node.id}`}
+            ref={setOutRef}
+            {...outListeners}
+            {...outAttr}
+            className={styles.outputConnector}
+          />
+        )}
       </div>
     </div>
   );
