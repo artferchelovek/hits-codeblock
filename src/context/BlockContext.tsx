@@ -1,16 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import type {
-  AssignmentNode,
-  BreakNode,
-  ForNode,
-  GetSizeNode,
-  IfNode,
-  PrintNode,
   ProgramNode,
-  StartNode,
   StatementNode,
-  VariableDeclarationNode,
-  WhileNode,
 } from "../types/ast.ts";
 
 interface BlockContextType {
@@ -18,18 +9,7 @@ interface BlockContextType {
   addStatement: (node: StatementNode) => void;
   updateStatement: (
     id: string,
-    updater: (
-      n: StatementNode,
-    ) =>
-      | VariableDeclarationNode
-      | AssignmentNode
-      | ForNode
-      | WhileNode
-      | IfNode
-      | PrintNode
-      | StartNode
-      | GetSizeNode
-      | BreakNode,
+    updater: (n: StatementNode) => StatementNode
   ) => void;
   removeStatement: (id: string) => void;
   removeProgram: () => void;

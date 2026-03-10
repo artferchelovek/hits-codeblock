@@ -166,6 +166,35 @@ export function createNode(type: string): StatementNode {
           name: "",
         },
       };
+    case "FunctionDeclaration":
+      return {
+        id: generateId(),
+        type: "FunctionDeclaration",
+        name: "",
+        params: [],
+        x: 0,
+        y: 0,
+        nextId: null,
+      };
+    case "Call":
+      return {
+        id: generateId(),
+        type: "Call",
+        callee: "",
+        args: [],
+        x: 0,
+        y: 0,
+        nextId: null,
+      };
+    case "Return":
+      return {
+        id: generateId(),
+        type: "Return",
+        argument: null,
+        x: 0,
+        y: 0,
+        nextId: null,
+      };
 
     default:
       throw new Error("Unknown node type");
