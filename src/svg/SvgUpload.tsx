@@ -4,20 +4,16 @@ interface SvgProps {
   fill: string;
 }
 
-export default function SvgUpload({ width = 18, height = 18, fill }: SvgProps) {
+export default function SvgUpload({ width = 24, height = 24, fill }: SvgProps) {
   return (
     <svg
-      style={{ padding: "3px" }}
-      width={width}
-      height={height}
-      viewBox="0 0 18 18"
-      fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      height={height}
+      viewBox="0 -960 960 960"
+      width={width}
+      fill={fill}
     >
-      <path
-        d="M9 15L13 11L11.6 9.6L10 11.2V7H8V11.2L6.4 9.6L5 11L9 15ZM2 5V16H16V5H2ZM2 18C1.45 18 0.975 17.8083 0.575 17.425C0.191667 17.025 0 16.55 0 16V3.525C0 3.29167 0.0333335 3.06667 0.1 2.85C0.183334 2.63333 0.3 2.43333 0.45 2.25L1.7 0.725C1.88333 0.491667 2.10833 0.316667 2.375 0.2C2.65833 0.0666666 2.95 0 3.25 0H14.75C15.05 0 15.3333 0.0666666 15.6 0.2C15.8833 0.316667 16.1167 0.491667 16.3 0.725L17.55 2.25C17.7 2.43333 17.8083 2.63333 17.875 2.85C17.9583 3.06667 18 3.29167 18 3.525V16C18 16.55 17.8 17.025 17.4 17.425C17.0167 17.8083 16.55 18 16 18H2ZM2.4 3H15.6L14.75 2H3.25L2.4 3Z"
-        fill={fill}
-      />
+      <path d="M240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v240h-80v-200H520v-200H240v640h360v80H240Zm638 15L760-183v89h-80v-226h226v80h-90l118 118-56 57Zm-638-95v-640 640Z" />
     </svg>
   );
 }

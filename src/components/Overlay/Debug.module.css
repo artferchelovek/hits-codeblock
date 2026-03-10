@@ -1,0 +1,69 @@
+.debug {
+    box-shadow: var(--md-sys-elevation);
+
+    background-color: var(--md-sys-color-surface-container);
+    border-radius: 20px;
+
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    overflow-y: auto;
+
+    .header {
+        padding: 2px 6px;
+        background: var(--md-sys-color-surface-container-high);
+    }
+
+    .title {
+        margin: 10px;
+        color: var(--md-sys-color-on-surface-variant);
+        font-weight: bold;
+    }
+
+    .gridContainer {
+
+        padding: 8px 10px;
+        overflow-y: auto;
+
+        .gridRow {
+            display: grid;
+
+            grid-template-columns: minmax(20px, auto) 20px 1fr;
+            align-items: center;
+            transition: background .1s;
+        }
+
+        .gridRow:hover {
+            background: var(--md-sys-color-surface-container-highest);
+        }
+
+        .varName {
+            color: var(--md-sys-color-primary);
+            font-weight: 500;
+            white-space: nowrap;
+            font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
+        }
+
+        .separator {
+            color: var(--md-sys-color-outline);
+            text-align: center;
+        }
+
+        .varValue {
+            color: var(--md-sys-color-tertiary);
+            word-break: break-all;
+            padding-left: 4px;
+            font-family: 'JetBrains Mono', 'Segoe UI Mono', monospace;
+        }
+
+        .empty {
+            padding: 20px;
+            text-align: center;
+            color: var(--md-sys-color-outline);
+            font-size: 0.85rem;
+        }
+    }
+}

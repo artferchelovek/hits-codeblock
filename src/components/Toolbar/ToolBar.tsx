@@ -27,7 +27,7 @@ export default function ToolBar() {
       refreshProgram(data);
       event.target.value = "";
     } catch (e) {
-      console.error(e);
+      alert(e);
     }
   };
   return (

@@ -11,25 +11,40 @@ export default function ConnectionLine({
   startY,
   endX,
   endY,
-  color = "rgb(44 99 139)",
+  color = "rgba(80, 150, 255, 0.8)",
 }: ConnectionLineProps) {
-  const dx = Math.abs(endX - startX);
-  const offset = Math.min(dx * 0.5, 100);
+  const dx = endX - startX;
+
+  const curvature = 0.5;
+  const horizontalOffset = Math.max(Math.abs(dx) * curvature, 50);
 
   const path = `
     M ${startX} ${startY}
-    C ${startX + offset} ${startY},
-      ${endX - offset} ${endY},
+    C ${startX + horizontalOffset} ${startY},
+      ${endX - horizontalOffset} ${endY},
       ${endX} ${endY}
   `;
 
   return (
-    <path
-      d={path}
-      stroke={color}
-      strokeWidth={3}
-      fill="none"
-      style={{ transition: "stroke 0.2s" }}
-    />
+    <g>
+      <path
+        d={path}
+        stroke={color}
+        strokeWidth={6}
+        fill="none"
+        style={{ opacity: 0.15, filter: "blur(2px)" }}
+      />
+
+      <path
+        d={path}
+        stroke={color}
+        strokeWidth={3}
+        fill="none"
+        strokeLinecap="round"
+        style={{
+          transition: "stroke 0.3s ease",
+        }}
+      />
+    </g>
   );
 }
