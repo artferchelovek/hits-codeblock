@@ -37,12 +37,15 @@ export class VariableActions {
       if (size) {
         const arr: ExpressionNode[] = [];
         const sizeArray = Calculate(size, this) as LiteralNode;
+
         if (!Number.isInteger(sizeArray.value)) {
           throw new Error("Size must be an integer");
         }
+
         for (let i = 0; i < sizeArray.value; i++) {
           arr.push({ type: "Literal", value: 0 });
         }
+
         this.workScope().set(variableName, { type: "Array", value: arr });
         return;
       }
@@ -56,7 +59,7 @@ export class VariableActions {
   public changeVariable(
     variableName: string,
     variableValue: ExpressionNode,
-    index?: ExpressionNode,
+    index?: LiteralNode,
   ): void {
     for (let i = this.variableData.length - 1; i >= 0; i--) {
       const variable = this.variableData[i].get(variableName);
@@ -69,7 +72,7 @@ export class VariableActions {
         if (index && variable.type === "Array") {
           const indexValue = this.checkAndGetIndex(index, variableName);
           const array = variable as ArrayNode;
-          array.value[indexValue] = Calculate(variableValue, this);
+          array.value[indexValue] = variableValue;
           return;
         }
 
@@ -85,10 +88,7 @@ export class VariableActions {
           }
         }
 
-        this.variableData[i].set(
-          variableName,
-          this.countExpression(variableValue),
-        );
+        this.variableData[i].set(variableName, variableValue);
         return;
       }
     }
@@ -98,7 +98,7 @@ export class VariableActions {
 
   public getVariableByName(
     variableName: string,
-    index?: ExpressionNode,
+    index?: LiteralNode,
   ): ExpressionNode {
     for (let i = this.variableData.length - 1; i >= 0; i--) {
       if (this.variableData[i].has(variableName)) {
@@ -142,14 +142,11 @@ export class VariableActions {
     return variables;
   }
 
-  private checkAndGetIndex(
-    index: ExpressionNode,
-    variableName: string,
-  ): number {
+  private checkAndGetIndex(index: LiteralNode, variableName: string): number {
     const variable = this.getVariableByName(variableName);
-    const indexValue = Calculate(index, this).value;
+    const indexValue = index.value;
 
-    if (typeof indexValue !== "number" || !Number.isInteger(indexValue)) {
+    if (!Number.isInteger(indexValue)) {
       throw new Error(`Indices must be integer number`);
     }
     if (variable?.type !== "Array" && variable?.type !== "String") {
@@ -159,15 +156,5 @@ export class VariableActions {
       throw new Error(`${variable.type} index out of range`);
     }
     return indexValue;
-  }
-
-  private countExpression(node: ExpressionNode): ExpressionNode {
-    if (node.type === "Array") {
-      return {
-        type: "Array",
-        value: node.value.map((item) => Calculate(item, this)),
-      };
-    }
-    return Calculate(node, this);
   }
 }

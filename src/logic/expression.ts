@@ -60,6 +60,8 @@ export function splitByComma(str: string): string[] {
   }
   result.push(str.slice(start));
   return result;
+}
+
 function countSymbol(str: string, sym: string): number {
   let count = 0;
   for (const i of str) {
