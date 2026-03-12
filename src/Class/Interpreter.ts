@@ -9,14 +9,24 @@ import type {
   WhileNode,
   DataForDebug,
   GetSizeNode,
+  FunctionDeclarationNode,
+  CallNode,
+  CallExpressionNode,
+  ReturnNode,
+  ExpressionNode,
+  LiteralNode,
+  StringNode,
+  ArrayNode,
 } from "../types/ast.ts";
 import { VariableActions } from "./VariableActions.ts";
 import { Calculate } from "../logic/expressionCount.ts";
+import { parseNameAndSize } from "../logic/expression.ts";
 
 export class Interpreter {
   private variableData = new VariableActions();
   private blockData: ProgramNode;
   readonly startNode: StatementNode | undefined;
+  private functionData = new Map<string, FunctionDeclarationNode>();
 
   private nodeMap: Map<string, StatementNode> = new Map<
     string,
@@ -34,6 +44,7 @@ export class Interpreter {
     if (!this.startNode || !this.startNode.nextId) {
       throw new Error("The starting node was not found");
     }
+
     const currentNode = this.nodeMap.get(this.startNode.nextId);
 
     if (currentNode === undefined) {
@@ -42,37 +53,50 @@ export class Interpreter {
       });
     }
 
+    for (const block of this.blockData.body) {
+      if (block.type === "FunctionDeclaration") {
+        if (
+          block.params.find(
+            (item) =>
+              !/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*(\(\d*\))?$/.test(item),
+          )
+        ) {
+          throw new Error(`Invalid function argument name`, {
+            cause: { BlockId: block.id },
+          });
+        }
+        if (block.nextId === null) {
+          throw new Error("Empty function", { cause: { BlockId: block.id } });
+        }
+
+        this.functionData.set(block.name, block);
+      }
+    }
+
     yield* this.action(currentNode);
 
     return { time: (Date.now() - timeStart) / 1000 };
   }
 
-  private actionsNode(node: StatementNode) {
-    switch (node.type) {
-      case "Assignment":
-        this.assignment(node);
-        break;
-      case "VariableDeclaration":
-        this.declaration(node);
-        break;
-      case "getSize":
-        this.getSize(node);
-        break;
-    }
-  }
-
-  private assignment(node: AssignmentNode): void {
+  private *assignment(node: AssignmentNode) {
+    const value = yield* this.calculate(node.value);
     if (node.target.type === "MemberExpression") {
-      const index = node.target.index;
+      const index = yield* this.calculate(node.target.index);
       const name =
         node.target.object.type === "Identifier" ? node.target.object.name : "";
 
-      this.variableData.changeVariable(name, node.value, index);
-      return;
+      if (index.type === "Literal") {
+        this.variableData.changeVariable(name, value, index);
+        return;
+      } else {
+        throw new Error("Index must be a Literal", {
+          cause: { BlockId: node.id },
+        });
+      }
     }
 
     if (node.target.type === "Identifier") {
-      this.variableData.changeVariable(node.target.name, node.value);
+      this.variableData.changeVariable(node.target.name, value);
     } else {
       throw new Error("Unsuitable type for assignment");
     }
@@ -110,10 +134,10 @@ export class Interpreter {
     this.variableData.declareVariable(nameIterator);
     this.variableData.changeVariable(
       nameIterator,
-      Calculate(node.from.right, this.variableData),
+      yield* this.calculate(node.from.right),
     );
 
-    let condition = Calculate(node.to, this.variableData);
+    let condition = yield* this.calculate(node.to);
 
     if (condition.type !== "Boolean") {
       throw new Error("Condition must be a boolean");
@@ -134,16 +158,19 @@ export class Interpreter {
             if (res === "Break") {
               break;
             }
+            if (res && res.type === "Return") {
+              return res;
+            }
           }
         } catch (e) {
           this.checkError(e, currentNode);
         }
       }
 
-      const value = Calculate(node.iterator, this.variableData);
+      const value = yield* this.calculate(node.iterator);
       this.variableData.changeVariable(nameIterator, value);
 
-      condition = Calculate(node.to, this.variableData);
+      condition = yield* this.calculate(node.to);
       if (condition.type !== "Boolean") {
         throw new Error("Condition must be a boolean");
       }
@@ -154,7 +181,11 @@ export class Interpreter {
 
   private *whileNode(node: WhileNode) {
     this.variableData.newScope();
-    let condition = Calculate(node.condition, this.variableData).value;
+    let conditionRet = yield* this.calculate(node.condition);
+    let condition;
+    if ("value" in conditionRet) {
+      condition = conditionRet.value;
+    }
 
     yield {
       type: node.type,
@@ -171,50 +202,69 @@ export class Interpreter {
             if (result === "Break") {
               break;
             }
+            if (result && result.type === "Return") {
+              return result;
+            }
           }
         } catch (e) {
           this.checkError(e, currentNode);
         }
       }
-      condition = Calculate(node.condition, this.variableData).value;
+      conditionRet = yield* this.calculate(node.condition);
+      if ("value" in conditionRet) {
+        condition = conditionRet.value;
+      }
     }
     this.variableData.deleteScope();
   }
 
   private *action(
     startNode: StatementNode,
-  ): Generator<DataForDebug, "Break" | void, void> {
+  ): Generator<DataForDebug, "Break" | ReturnNode | void, void> {
     let currentNode: StatementNode | undefined = startNode;
     try {
+      let result;
       while (currentNode) {
-        if (currentNode.type === "BreakNode") {
-          return "Break";
-        }
-        if (currentNode.type === "For") {
-          yield* this.forNode(currentNode);
+        switch (currentNode.type) {
+          case "If":
+            result = yield* this.ifNode(currentNode);
+            break;
 
-          currentNode = this.getNext(currentNode);
-          continue;
-        }
+          case "While":
+            result = yield* this.whileNode(currentNode);
+            break;
 
-        if (currentNode.type === "If") {
-          const result = yield* this.ifNode(currentNode);
-          if (result === "Break") {
+          case "Call":
+            yield* this.callNodeAction(currentNode);
+            break;
+
+          case "For":
+            result = yield* this.forNode(currentNode);
+            break;
+
+          case "Assignment":
+            yield* this.assignment(currentNode);
+            break;
+
+          case "VariableDeclaration":
+            this.declaration(currentNode);
+            break;
+
+          case "getSize":
+            this.getSize(currentNode);
+            break;
+
+          case "Return":
+            yield {
+              type: currentNode.type,
+              id: currentNode.id,
+              variableAll: this.variableData.getAll(),
+            };
+            return currentNode;
+
+          case "BreakNode":
             return "Break";
-          }
-
-          currentNode = this.getNext(currentNode);
-          continue;
         }
-
-        if (currentNode.type === "While") {
-          yield* this.whileNode(currentNode);
-
-          currentNode = this.getNext(currentNode);
-          continue;
-        }
-
-        this.actionsNode(currentNode);
 
         yield {
           type: currentNode.type,
@@ -226,10 +276,14 @@ export class Interpreter {
                 ? this.variableData.getVariableByName(
                     currentNode.expression.name,
                   )
-                : Calculate(currentNode.expression, this.variableData)
+                : yield* this.calculate(currentNode.expression)
               : undefined,
         };
-
+        if (result === "Break") {
+          return "Break";
+        } else if (result && result.type === "Return") {
+          return result;
+        }
         currentNode = this.getNext(currentNode);
       }
     } catch (e) {
@@ -237,17 +291,16 @@ export class Interpreter {
     }
   }
 
-  private *ifNode(node: IfNode): Generator<DataForDebug, "Break" | void, void> {
+  private *ifNode(
+    node: IfNode,
+  ): Generator<DataForDebug, "Break" | ReturnNode | void, void> {
     this.variableData.newScope();
     let result;
     let nextActions;
     const trueId = node.trueId;
     const falseId = node.falseId;
 
-    const condition = Calculate(
-      node.condition,
-      this.variableData,
-    ) as BooleanNode;
+    const condition = yield* this.calculate(node.condition);
 
     yield {
       type: node.type,
@@ -300,9 +353,9 @@ export class Interpreter {
     return node.nextId ? this.nodeMap.get(node.nextId) : undefined;
   }
 
-  private checkError(error: unknown, node: StatementNode | undefined) {
-    if (typeof node !== "object" || !node.id) {
-      return;
+  private checkError(error: unknown, node?: StatementNode) {
+    if (!node?.id) {
+      throw error;
     }
 
     if (error instanceof Error) {
@@ -315,5 +368,177 @@ export class Interpreter {
       }
       throw new Error(error.message, { cause: { BlockId: node.id } });
     }
+  }
+
+  public *callNodeAction(node: CallNode | CallExpressionNode) {
+    const currentFunction = this.correctCallFunction(
+      node,
+    ) as FunctionDeclarationNode;
+
+    yield {
+      type: currentFunction.type,
+      id: currentFunction.id,
+      variableAll: this.variableData.getAll(),
+    };
+
+    this.variableData.newScope();
+
+    for (let i = 0; i < node.args.length; i++) {
+      const arg = parseNameAndSize(currentFunction.params[i]);
+      const inputArg = node.args[i];
+      const value =
+        inputArg.type === "Identifier"
+          ? this.variableData.getVariableByName(inputArg.name)
+          : Calculate(inputArg, this.variableData);
+
+      if (value.type === "Array") {
+        const size: LiteralNode = {
+          type: "Literal",
+          value: value.value.length,
+        };
+        this.variableData.declareVariable(arg.name, size);
+      } else {
+        this.variableData.declareVariable(arg.name);
+      }
+
+      this.variableData.changeVariable(arg.name, value);
+    }
+
+    try {
+      const startFunc = this.nodeMap.get(currentFunction.nextId as string);
+      if (startFunc) {
+        const res = yield* this.action(startFunc);
+        if (res && res !== "Break" && res.argument) {
+          return yield* this.calculate(res.argument);
+        }
+      }
+    } finally {
+      this.variableData.deleteScope();
+    }
+  }
+
+  private correctCallFunction(node: CallNode | CallExpressionNode) {
+    const currentFunction = this.functionData.get(node.callee);
+
+    if (currentFunction === undefined) {
+      this.checkError(
+        new Error(`Cannot call function: ${node.callee}`),
+        currentFunction,
+      );
+      return;
+    }
+    if (currentFunction.nextId === null) {
+      this.checkError(
+        new Error(`Cannot call empty function: ${node.callee}`),
+        currentFunction,
+      );
+      return;
+    }
+
+    if (currentFunction.params.length < node.args.length) {
+      this.checkError(
+        new Error(
+          `${currentFunction.name} takes 
+          ${currentFunction.params.length} arguments but 
+          ${node.args.length} were given`,
+        ),
+        currentFunction,
+      );
+      return;
+    }
+
+    if (currentFunction.params.length > node.args.length) {
+      const missingArg = currentFunction.params.slice(node.args.length);
+      this.checkError(
+        new Error(
+          `"${currentFunction.name}" missing ${missingArg.length} argument ${missingArg.toString()}`,
+        ),
+        currentFunction,
+      );
+    }
+    return currentFunction;
+  }
+
+  public *callExpression(node: CallExpressionNode) {
+    const currentFunction = this.functionData.get(node.callee);
+    if (currentFunction === undefined) {
+      return;
+    }
+
+    const result = yield* this.callNodeAction(node);
+
+    if (result !== undefined) {
+      return result;
+    }
+
+    throw new Error("Function does not have return a value", {
+      cause: { BlockId: currentFunction.id },
+    });
+  }
+
+  private *checkNodeFunction(
+    node: ExpressionNode,
+  ): Generator<DataForDebug, ExpressionNode, void> {
+    if (node.type === "CallExpression") {
+      const res = yield* this.callExpression(node);
+      if (res) {
+        return res;
+      }
+    }
+    if (node.type === "Array") {
+      const newArray: ExpressionNode[] = [];
+      for (const item of node.value) {
+        newArray.push(yield* this.checkNodeFunction(item));
+      }
+      return { ...node, value: newArray };
+    }
+
+    if (node.type === "BinaryExpression") {
+      return {
+        ...node,
+        left: yield* this.checkNodeFunction(node.left),
+        right: yield* this.checkNodeFunction(node.right),
+      };
+    }
+
+    if (node.type === "MemberExpression") {
+      return {
+        ...node,
+        index: yield* this.checkNodeFunction(node.index),
+      };
+    }
+
+    return node;
+  }
+
+  private *calculate(
+    node: ExpressionNode,
+  ): Generator<
+    DataForDebug,
+    LiteralNode | BooleanNode | StringNode | ArrayNode,
+    void
+  > {
+    const updateNode = yield* this.checkNodeFunction(node);
+
+    if (updateNode.type === "Array") {
+      const array: ExpressionNode[] = [];
+      for (const nodes of updateNode.value) {
+        const elem = yield* this.calculate(nodes);
+
+        if (nodes.type !== "Array") {
+          array.push(elem);
+        }
+      }
+      return { type: "Array", value: array };
+    }
+
+    if (node.type === "Identifier") {
+      const value = this.variableData.getVariableByName(node.name);
+      if ("value" in value) {
+        return value;
+      }
+    }
+
+    return Calculate(updateNode, this.variableData);
   }
 }

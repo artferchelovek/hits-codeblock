@@ -64,6 +64,8 @@
         gap: 10px;
         padding: 10px;
 
+        overflow-y: auto;
+        flex-shrink: 0;
         box-shadow: var(--md-sys-elevation);
 
         background-color: var(--md-sys-color-surface-container);

@@ -5,6 +5,7 @@ import type {
   StringNode,
 } from "../types/ast.ts";
 import type { VariableActions } from "../Class/VariableActions.ts";
+
 type CorrectExpression = string | number | boolean;
 
 function add(
