@@ -157,4 +157,15 @@ export class VariableActions {
     }
     return indexValue;
   }
+
+  public getVariableScope(): VariableForDebug[] {
+    const variables: VariableForDebug[] = [];
+    const currentScope = this.workScope();
+
+    currentScope.forEach((variable, name) => {
+      variables.push({ type: "VariableForDebug", name: name, value: variable });
+    });
+
+    return variables;
+  }
 }
