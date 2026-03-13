@@ -1,6 +1,6 @@
 import type { CallNode } from "../../../types/ast.ts";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import styles from "./Block.module.css";
 import {
   renderExpression,
@@ -10,7 +10,7 @@ import {
 import { useState, useEffect } from "react";
 
 export default function Call({ node }: { node: CallNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [callee, setCallee] = useState(node.callee);
   const [argsValue, setArgsValue] = useState(

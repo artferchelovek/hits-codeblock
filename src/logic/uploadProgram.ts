@@ -1,6 +1,6 @@
 import type { ProgramNode } from "../types/ast.ts";
 
-export const uploadProgram = (file: File): Promise<any> => {
+export const uploadProgram = (file: File): Promise<ProgramNode> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (event) => {

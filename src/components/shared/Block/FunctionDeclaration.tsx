@@ -1,6 +1,6 @@
 import type { FunctionDeclarationNode } from "../../../types/ast.ts";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import styles from "./Block.module.css";
 import { splitByComma } from "../../../logic/expression.ts";
 import { useState, useEffect } from "react";
@@ -10,7 +10,7 @@ export default function FunctionDeclaration({
 }: {
   node: FunctionDeclarationNode;
 }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [paramsText, setParamsText] = useState(node.params.join(", "));
 
@@ -24,7 +24,6 @@ export default function FunctionDeclaration({
         .filter(Boolean)
         .join(", ")
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParamsText(currentParams);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

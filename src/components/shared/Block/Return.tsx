@@ -1,6 +1,6 @@
 import type { ReturnNode } from "../../../types/ast.ts";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import styles from "./Block.module.css";
 import {
   renderExpression,
@@ -9,13 +9,14 @@ import {
 import { useState, useEffect } from "react";
 
 export default function Return({ node }: { node: ReturnNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [inputValue, setInputValue] = useState(
     node.argument ? renderExpression(node.argument) : "",
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(node.argument ? renderExpression(node.argument) : "");
   }, [node.argument]);
 
@@ -34,7 +35,7 @@ export default function Return({ node }: { node: ReturnNode }) {
                 return { ...n, argument: parsed };
               });
             } catch {
-              // чтобы не было ошибки)
+              // ignore parsing errors
             }
           }}
           type="text"

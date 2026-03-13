@@ -1,6 +1,6 @@
 import type { PrintNode } from "../../../types/ast";
 import styles from "./Block.module.css";
-import { useBlockContext } from "../../../context/BlockContext";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import {
   renderExpression,
   stringToExpression,
@@ -9,13 +9,15 @@ import { useEffect, useState } from "react";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
 
 export default function Print({ node }: { node: PrintNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [inputValue, setInputValue] = useState(
     renderExpression(node.expression),
   );
 
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(renderExpression(node.expression));
   }, [node.expression]);
 
@@ -39,7 +41,9 @@ export default function Print({ node }: { node: PrintNode }) {
                   expression: parsed,
                 };
               });
-            } catch {}
+            } catch {
+              // ignore parsing errors
+            }
           }}
           type="text"
           placeholder="a + 5"

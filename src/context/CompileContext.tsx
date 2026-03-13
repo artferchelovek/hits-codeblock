@@ -14,6 +14,7 @@ interface CompileContextType {
 
 const CompileContext = createContext<CompileContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCompileContext = () => {
   const context = useContext(CompileContext);
   if (!context) {

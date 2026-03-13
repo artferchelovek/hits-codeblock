@@ -1,23 +1,24 @@
 import "./App.module.css";
 import Overlay from "../../components/Overlay/Overlay";
 import EditorSpace from "../../components/EditorSpace/EditorSpace";
-import { DndContext } from "@dnd-kit/core";
-import { useBlockContext } from "../../context/BlockContext";
+import { DndContext, pointerWithin } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { useProgramContext } from "../../context/ProgramContext";
 import { createNode } from "../../logic/nodeFactory";
 import { useState } from "react";
 import ToolBar from "../../components/Toolbar/ToolBar.tsx";
 
 export default function App() {
-  const { addStatement, updateStatement } = useBlockContext();
+  const { addStatement, updateStatement } = useProgramContext();
   const [panMain, setPanMain] = useState({ x: -5000, y: -5000 });
 
-  const dragEnd = (event: any) => {
+  const dragEnd = (event: DragEndEvent) => {
     const { active, over, delta } = event;
 
     if (!over) return;
 
     if (active.data.current?.type === "node") {
-      updateStatement(active.id, (node) => ({
+      updateStatement(String(active.id), (node) => ({
         ...node,
         x: node.x + delta.x,
         y: node.y + delta.y,
@@ -33,7 +34,7 @@ export default function App() {
         const editorEl = document.getElementById("editor");
         const rect = editorEl?.getBoundingClientRect();
 
-        if (rect) {
+        if (rect && draggedRect) {
           const newNode = createNode(type);
           newNode.x = draggedRect.left - rect.left - panMain.x;
           newNode.y = draggedRect.top - rect.top - panMain.y;
@@ -44,7 +45,7 @@ export default function App() {
   };
 
   return (
-    <DndContext onDragEnd={dragEnd}>
+    <DndContext onDragEnd={dragEnd} collisionDetection={pointerWithin}>
       <Overlay />
       <EditorSpace setPanMain={setPanMain} panMain={panMain} />
       <ToolBar />

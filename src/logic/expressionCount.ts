@@ -92,7 +92,7 @@ export function Calculate(
   if (expression.type === "MemberExpression") {
     const index = Calculate(expression.index, variableData);
 
-    if (expression.object.type === "Identifier") {
+    if (expression.object.type === "Identifier" && index.type === "Literal") {
       const name = expression.object.name;
       const variable = variableData.getVariableByName(name, index);
       if (variable?.type === "Literal" || variable?.type === "String") {
