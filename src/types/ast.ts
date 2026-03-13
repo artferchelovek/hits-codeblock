@@ -20,7 +20,10 @@ export type StatementNode =
   | PrintNode
   | StartNode
   | BreakNode
-  | GetSizeNode;
+  | GetSizeNode
+  | FunctionDeclarationNode
+  | CallNode
+  | ReturnNode;
 
 export interface StartNode extends BaseNodeAttributes {
   type: "StartNode";
@@ -70,6 +73,23 @@ export interface PrintNode extends BaseNodeAttributes {
   expression: ExpressionNode;
 }
 
+export interface FunctionDeclarationNode extends BaseNodeAttributes {
+  type: "FunctionDeclaration";
+  name: string;
+  params: string[];
+}
+
+export interface CallNode extends BaseNodeAttributes {
+  type: "Call";
+  callee: string;
+  args: ExpressionNode[];
+}
+
+export interface ReturnNode extends BaseNodeAttributes {
+  type: "Return";
+  argument: ExpressionNode | null;
+}
+
 export type ExpressionNode =
   | LiteralNode
   | IdentifierNode
@@ -77,11 +97,19 @@ export type ExpressionNode =
   | BinaryExpressionNode
   | ArrayNode
   | MemberExpressionNode
-  | BooleanNode;
+  | BooleanNode
+  | UnaryExpression
+  | CallExpressionNode;
 
 export interface LiteralNode {
   type: "Literal";
   value: number;
+}
+
+export interface UnaryExpression {
+  type: "UnaryExpression";
+  operator: "-";
+  value: ExpressionNode;
 }
 
 export interface ArrayNode {
@@ -108,6 +136,12 @@ export interface StringNode {
 export interface BooleanNode {
   type: "Boolean";
   value: boolean;
+}
+
+export interface CallExpressionNode {
+  type: "CallExpression";
+  callee: string;
+  args: ExpressionNode[];
 }
 
 export interface BinaryExpressionNode {

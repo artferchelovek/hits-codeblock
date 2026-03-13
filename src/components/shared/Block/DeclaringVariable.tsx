@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { VariableDeclarationNode } from "../../../types/ast";
 import styles from "./Block.module.css";
-import { useBlockContext } from "../../../context/BlockContext";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
 import {
   parseNameAndSize,
@@ -13,7 +13,7 @@ export default function DeclaringVariable({
 }: {
   node: VariableDeclarationNode;
 }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [inputValue, setInputValue] = useState("");
 
@@ -21,6 +21,7 @@ export default function DeclaringVariable({
     const displayValue = node.size
       ? `${node.name}(${renderExpression(node.size)})`
       : node.name;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(displayValue);
   }, [node.name, node.size]);
 

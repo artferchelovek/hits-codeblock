@@ -2,7 +2,7 @@ import BaseBlockLayout from "./BaseBlockLayout.tsx";
 
 import type { GetSizeNode } from "../../../types/ast.ts";
 
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import { useEffect, useState } from "react";
 import {
   renderExpression,
@@ -10,11 +10,12 @@ import {
 } from "../../../logic/expression.ts";
 
 export default function GetSize({ node }: { node: GetSizeNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
   const [target, setTarget] = useState<string>("");
   const [object, setObject] = useState<string>("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTarget(renderExpression(node.target));
     setObject(renderExpression(node.object));
   }, [node.target, node.object]);
@@ -39,7 +40,9 @@ export default function GetSize({ node }: { node: GetSizeNode }) {
                 };
               });
             }
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       />
       <p>&larr;</p>
@@ -58,7 +61,9 @@ export default function GetSize({ node }: { node: GetSizeNode }) {
                 object: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         value={object}
         type="text"

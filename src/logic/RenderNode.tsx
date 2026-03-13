@@ -8,6 +8,9 @@ import StartNode from "../components/shared/Block/StartNode.tsx";
 import BreakNode from "../components/shared/Block/BreakNode.tsx";
 import While from "../components/shared/Block/While.tsx";
 import GetSize from "../components/shared/Block/getSize.tsx";
+import FunctionDeclaration from "../components/shared/Block/FunctionDeclaration.tsx";
+import Call from "../components/shared/Block/Call.tsx";
+import Return from "../components/shared/Block/Return.tsx";
 
 export default function RenderNode({ node }: { node: StatementNode }) {
   switch (node.type) {
@@ -29,6 +32,12 @@ export default function RenderNode({ node }: { node: StatementNode }) {
       return <BreakNode node={node} />;
     case "getSize":
       return <GetSize node={node} />;
+    case "FunctionDeclaration":
+      return <FunctionDeclaration node={node} />;
+    case "Call":
+      return <Call node={node} />;
+    case "Return":
+      return <Return node={node} />;
     default:
       return <p>мяу</p>;
   }

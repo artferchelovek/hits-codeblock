@@ -1,37 +1,55 @@
 import "./App.module.css";
 import Overlay from "../../components/Overlay/Overlay";
 import EditorSpace from "../../components/EditorSpace/EditorSpace";
-import { DndContext } from "@dnd-kit/core";
-import { useBlockContext } from "../../context/BlockContext";
+import { DndContext, pointerWithin } from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { useProgramContext } from "../../context/ProgramContext";
+import { useInteractionContext } from "../../context/InteractionContext";
 import { createNode } from "../../logic/nodeFactory";
 import { useState } from "react";
 import ToolBar from "../../components/Toolbar/ToolBar.tsx";
 
 export default function App() {
-  const { addStatement } = useBlockContext();
+  const { addStatement, updateStatement } = useProgramContext();
+  const { zoom } = useInteractionContext();
   const [panMain, setPanMain] = useState({ x: -5000, y: -5000 });
 
-  const dragEnd = (event: any) => {
+  const dragEnd = (event: DragEndEvent) => {
     const { active, over, delta } = event;
 
     if (!over) return;
 
-    if (over.id === "root") {
+    if (active.data.current?.type === "node") {
+      updateStatement(String(active.id), (node) => ({
+        ...node,
+        x: node.x + delta.x / zoom,
+        y: node.y + delta.y / zoom,
+      }));
+      return;
+    }
+
+    if (over?.id === "root" && String(active.id).startsWith("palette-")) {
       const type = active.data.current?.type;
+      if (type) {
+        const draggedRect = active.rect.current.translated;
 
-      if (!type) return;
+        const editorEl = document.getElementById("editor");
+        const rect = editorEl?.getBoundingClientRect();
 
-      const newNode = createNode(type);
-      newNode.x = newNode.x + delta.x - panMain.x;
-      newNode.y = newNode.y + delta.y - panMain.y;
-      addStatement(newNode);
+        if (rect && draggedRect) {
+          const newNode = createNode(type);
+          newNode.x = (draggedRect.left - rect.left - panMain.x) / zoom;
+          newNode.y = (draggedRect.top - rect.top - panMain.y) / zoom;
+          addStatement(newNode);
+        }
+      }
     }
   };
 
   return (
-    <DndContext onDragEnd={dragEnd}>
+    <DndContext onDragEnd={dragEnd} collisionDetection={pointerWithin}>
       <Overlay />
-      <EditorSpace setPanMain={setPanMain} />
+      <EditorSpace setPanMain={setPanMain} panMain={panMain} />
       <ToolBar />
     </DndContext>
   );

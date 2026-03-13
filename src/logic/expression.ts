@@ -19,7 +19,7 @@ export function parseNameAndSize(input: string): {
         name: name,
         size: sizeContent ? stringToExpression(sizeContent) : undefined,
       };
-    } catch (e) {
+    } catch {
       return { name: trimmed };
     }
   }
@@ -27,12 +27,61 @@ export function parseNameAndSize(input: string): {
   return { name: trimmed };
 }
 
+export function splitByComma(str: string): string[] {
+  const result: string[] = [];
+  let start = 0;
+  let parenDepth = 0;
+  let bracketDepth = 0;
+  let inString = false;
+  let quoteChar = "";
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if ((char === '"' || char === "'") && (i === 0 || str[i - 1] !== "\\")) {
+      if (!inString) {
+        inString = true;
+        quoteChar = char;
+      } else if (char === quoteChar) {
+        inString = false;
+      }
+      continue;
+    }
+    if (inString) continue;
+
+    if (char === "(") parenDepth++;
+    if (char === ")") parenDepth--;
+    if (char === "[") bracketDepth++;
+    if (char === "]") bracketDepth--;
+
+    if (char === "," && parenDepth === 0 && bracketDepth === 0) {
+      result.push(str.slice(start, i));
+      start = i + 1;
+    }
+  }
+  result.push(str.slice(start));
+  return result;
+}
+
+function countSymbol(str: string, sym: string): number {
+  let count = 0;
+  for (const i of str) {
+    if (i === sym) {
+      count++;
+    }
+  }
+  return count;
+}
+
 export function stringToExpression(expression: string): ExpressionNode {
-  let current = expression.trim();
+  const current = expression.trim();
 
   if (
-    (current.startsWith('"') && current.endsWith('"')) ||
-    (current.startsWith("'") && current.endsWith("'"))
+    (current.startsWith('"') &&
+      current.endsWith('"') &&
+      countSymbol(current, '"') === 2) ||
+    (current.startsWith("'") &&
+      current.endsWith("'") &&
+      countSymbol(current, "'") === 2)
   ) {
     return {
       type: "String",
@@ -99,6 +148,7 @@ export function stringToExpression(expression: string): ExpressionNode {
 
     if (stack === 0 && bracketStack === 0) {
       const twoCharOp = current.substring(i, i + 2);
+
       const ops2 = [">=", "<=", "==", "!=", "&&", "||"];
       if (ops2.includes(twoCharOp)) {
         const priority = getPriority(twoCharOp);
@@ -113,7 +163,11 @@ export function stringToExpression(expression: string): ExpressionNode {
 
       if ("+-*/><%=".includes(char)) {
         const priority = getPriority(char);
-        if (priority <= minPriority) {
+        const lastChar = current.slice(0, i).trim().at(-1) || "";
+        const isUnary =
+          char === "-" && (lastChar === "" || "+-*/><%=".includes(lastChar));
+
+        if (priority <= minPriority && !isUnary) {
           minPriority = priority;
           operatorIndex = i;
           foundOperator = char;
@@ -125,7 +179,7 @@ export function stringToExpression(expression: string): ExpressionNode {
   if (operatorIndex !== -1) {
     return {
       type: "BinaryExpression",
-      operator: foundOperator as any,
+      operator: foundOperator as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       left: stringToExpression(current.slice(0, operatorIndex)),
       right: stringToExpression(
         current.slice(operatorIndex + foundOperator.length),
@@ -133,15 +187,21 @@ export function stringToExpression(expression: string): ExpressionNode {
     };
   }
 
+  if (current.startsWith("-")) {
+    return {
+      type: "UnaryExpression",
+      operator: "-",
+      value: stringToExpression(current.slice(1)),
+    };
+  }
+
   if (current.endsWith("]")) {
     if (current.startsWith("[")) {
       const elements: ExpressionNode[] = [];
-      current
-        .slice(1, -1)
-        .split(",")
-        .forEach((elem) => {
-          if (elem.trim()) elements.push(stringToExpression(elem));
-        });
+      splitByComma(current.slice(1, -1)).forEach((elem) => {
+        const trimmed = elem.trim();
+        if (trimmed) elements.push(stringToExpression(trimmed));
+      });
 
       return { type: "Array", value: elements };
     }
@@ -166,6 +226,38 @@ export function stringToExpression(expression: string): ExpressionNode {
           current.slice(openbracketIndex + 1, -1).trim(),
         ),
       };
+    }
+  }
+
+  if (current.endsWith(")")) {
+    let depth = 0;
+    let openParenIndex = -1;
+    for (let i = current.length - 1; i >= 0; i--) {
+      if (current[i] === ")") depth++;
+      if (current[i] === "(") depth--;
+      if (depth === 0) {
+        openParenIndex = i;
+        break;
+      }
+    }
+
+    if (openParenIndex > 0) {
+      const callee = current.slice(0, openParenIndex).trim();
+      if (/^[a-zA-Zа-яА-Я_][a-zA-Zа-яА-Я0-9_]*$/.test(callee)) {
+        const argsStr = current.slice(openParenIndex + 1, -1).trim();
+        const args: ExpressionNode[] = [];
+        if (argsStr) {
+          splitByComma(argsStr).forEach((arg) => {
+            const trimmed = arg.trim();
+            if (trimmed) args.push(stringToExpression(trimmed));
+          });
+        }
+        return {
+          type: "CallExpression",
+          callee,
+          args: args,
+        };
+      }
     }
   }
 
@@ -220,12 +312,34 @@ export function renderExpression(expr: ExpressionNode): string {
       return expr.name;
     case "Boolean":
       return String(expr.value);
-    case "BinaryExpression":
-      return `${renderExpression(expr.left)} ${expr.operator} ${renderExpression(expr.right)}`;
+    case "BinaryExpression": {
+      const currentPriority = getPriority(expr.operator);
+
+      let leftStr = renderExpression(expr.left);
+      if (expr.left.type === "BinaryExpression") {
+        if (getPriority(expr.left.operator) < currentPriority) {
+          leftStr = `(${leftStr})`;
+        }
+      }
+
+      let rightStr = renderExpression(expr.right);
+      if (expr.right.type === "BinaryExpression") {
+        const rightPriority = getPriority(expr.right.operator);
+        if (rightPriority <= currentPriority) {
+          rightStr = `(${rightStr})`;
+        }
+      }
+
+      return `${leftStr} ${expr.operator} ${rightStr}`;
+    }
     case "Array":
       return `[${expr.value.map((i) => renderExpression(i)).join(", ")}]`;
     case "MemberExpression":
       return `${renderExpression(expr.object)}[${renderExpression(expr.index)}]`;
+    case "CallExpression":
+      return `${expr.callee}(${expr.args.map(renderExpression).join(", ")})`;
+    case "UnaryExpression":
+      return `${expr.operator}${renderExpression(expr.value)}`;
     default:
       return "";
   }

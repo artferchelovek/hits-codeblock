@@ -1,4 +1,5 @@
-import { useBlockContext } from "../context/BlockContext.tsx";
+import { useProgramContext } from "../context/ProgramContext.tsx";
+import { useInteractionContext } from "../context/InteractionContext.tsx";
 import { useCompileContext } from "../context/CompileContext.tsx";
 import { useCallback, useRef, useState } from "react";
 import { Interpreter } from "../Class/Interpreter.ts";
@@ -6,7 +7,8 @@ import { renderExpression } from "../logic/expression.ts";
 import type { ExpressionNode, VariableForDebug } from "../types/ast.ts";
 
 export const useProgramRunner = () => {
-  const { program, setActiveNode, setErrorNode } = useBlockContext();
+  const { program } = useProgramContext();
+  const { setActiveNode, setErrorNode } = useInteractionContext();
   const { addPrintable, clearPrintable } = useCompileContext();
 
   const [isRunning, setIsRunning] = useState(false);

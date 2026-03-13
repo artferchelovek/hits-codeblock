@@ -1,73 +1,75 @@
-# React + TypeScript + Vite
+# CodeBlocks 
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Визуальный редактор алгоритмов с собственным интерпретатором. Позволяет собирать программы из функциональных блоков, запускать их в реальном времени и отлаживать по шагам.
 
-Currently, two official plugins are available:
+![CodeBlocks Preview](./examples/blocks.jpeg)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Стек технологий
 
-## React Compiler
+*   **Frontend**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+*   **Сборка**: [Vite](https://vitejs.dev/)
+*   **Drag & Drop**: [@dnd-kit/core](https://dnd-kit.com/)
+*   **Стилизация**: **Vanilla CSS** с использованием переменных **Material 3 Design**. Поддержка темных и светлых тем.
+*   **Архитектура**: Разделенные контексты (Program, Interaction, Compile) для высокой производительности и чистоты кода.
+*   **Инфраструктура**: [Docker](https://www.docker.com/) (Multi-stage build) + Nginx.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Примеры программ
 
-## Expanding the ESLint configuration
+В папке `examples/` вы найдете готовые алгоритмы, которые можно загрузить в редактор через кнопку "Upload" в тулбаре:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+![ToolBar Preview](./examples/ToolBar.png)
+*   **[bubbleSort.json](./examples/bubbleSort.json)**
+*   **[mergeSort.json](./examples/MergeSort.json)**
+*   **[binarySearch.json](./examples/BinarySearch.json)**
+*   **[palindromCheck.json](./examples/PalindromeCheck.json)**
+*   **[StringReverse.json](./examples/StringReverse.json)**
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Как работает интерпретатор
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Парсинг выражений**: Текстовые инпуты внутри блоков парсятся в абстрактное синтаксическое дерево (AST).
+2.  **Генераторы (Step-by-step)**: Логика выполнения построена на **JavaScript Generators**. Это позволяет:
+    *   Приостанавливать выполнение программы.
+    *   Реализовать визуальную отладку (подсветка текущего блока).
+    *   Выполнять программу по одному шагу.
+3.  **Управление памятью**: Отдельный класс `VariableActions` отвечает за область видимости и хранение значений переменных.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Как запустить
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### С помощью Docker
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Мы используем многоэтапную сборку, чтобы итоговый образ был максимально легким.
+
+1.  Соберите образ:
+    ```bash
+    docker build -t codeblocks .
+    ```
+2.  Запустите контейнер:
+    ```bash
+    docker run -d -p 8080:80 codeblocks
+    ```
+    Приложение будет доступно по адресу `http://localhost:8080`.
+
+### С помощью NPM
+
+1.  Установите зависимости:
+    ```bash
+    npm install
+    ```
+2.  Запустите сервер для разработки:
+    ```bash
+    npm run dev
+    ```
+3.  Соберите проект для продакшена:
+    ```bash
+    npm run build
+    ```
+
+## Ключевые фичи
+
+*   **Бесконечное поле**: Свободное перемещение (панорамирование) мышкой или тачем.
+*   **Умный Зум**: Масштабирование поля (Ctrl + Scroll) точно в точку курсора.
+*   **Динамические линии**: Связи между блоками пересчитываются в реальном времени с использованием оптимизированного `useEffect` и чтения DOM.
+*   **Import/Export**: Сохраняйте свои алгоритмы в JSON и загружайте их обратно.
+*   **Терминал**: Встроенный вывод для отслеживания работы программы.
+*   **Dark Mode**: Адаптивный дизайн, который бережет ваши глаза.
