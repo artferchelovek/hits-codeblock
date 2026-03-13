@@ -1,6 +1,6 @@
 import styles from "./Overlay.module.css";
 import { useDraggable, DragOverlay, useDndContext } from "@dnd-kit/core";
-import { useBlockContext } from "../../context/BlockContext.tsx";
+import { useProgramContext } from "../../context/ProgramContext.tsx";
 import { useCompileContext } from "../../context/CompileContext.tsx";
 import Terminal from "./Terminal.tsx";
 import DebugInterface from "./Debug.tsx";
@@ -30,7 +30,7 @@ const BLOCKS_BY_CATEGORY: Record<Category, string[]> = {
 
 export default function Overlay() {
   const { compilator } = useCompileContext();
-  const { program } = useBlockContext();
+  const { program } = useProgramContext();
   const { active } = useDndContext();
 
   const runner = useProgramRunner();

@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import styles from "./Block.module.css";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
+import { useInteractionContext } from "../../../context/InteractionContext.tsx";
 import SvgMove from "../../../svg/SvgMove.tsx";
 
 type Props = {
@@ -15,7 +16,8 @@ type Props = {
 };
 
 export default function TripleBlockLayout({ node, children }: Props) {
-  const { removeStatement, activeNode, errorNode } = useBlockContext();
+  const { removeStatement } = useProgramContext();
+  const { activeNode, errorNode } = useInteractionContext();
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({

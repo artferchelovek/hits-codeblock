@@ -1,6 +1,6 @@
 import styles from "./ToolBar.module.css";
 import SvgBin from "../../svg/SvgBin.tsx";
-import { useBlockContext } from "../../context/BlockContext.tsx";
+import { useProgramContext } from "../../context/ProgramContext.tsx";
 import SvgDownload from "../../svg/SvgDownload.tsx";
 import SvgUpload from "../../svg/SvgUpload.tsx";
 import downloadProgram from "../../logic/downloadProgram.ts";
@@ -14,7 +14,7 @@ export default function ToolBar() {
     refreshProgram,
     program,
     updateProgramName,
-  } = useBlockContext();
+  } = useProgramContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

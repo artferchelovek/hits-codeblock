@@ -2,13 +2,13 @@ import "./App.module.css";
 import Overlay from "../../components/Overlay/Overlay";
 import EditorSpace from "../../components/EditorSpace/EditorSpace";
 import { DndContext, pointerWithin } from "@dnd-kit/core";
-import { useBlockContext } from "../../context/BlockContext";
+import { useProgramContext } from "../../context/ProgramContext";
 import { createNode } from "../../logic/nodeFactory";
 import { useState } from "react";
 import ToolBar from "../../components/Toolbar/ToolBar.tsx";
 
 export default function App() {
-  const { addStatement, updateStatement } = useBlockContext();
+  const { addStatement, updateStatement } = useProgramContext();
   const [panMain, setPanMain] = useState({ x: -5000, y: -5000 });
 
   const dragEnd = (event: any) => {

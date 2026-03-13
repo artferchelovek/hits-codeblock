@@ -5,10 +5,10 @@ import {
   renderExpression,
   stringToExpression,
 } from "../../../logic/expression.ts";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 
 export default function If({ node }: { node: IfNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [leftCondition, setLeftCondition] = useState(
     renderExpression(node.condition.left),

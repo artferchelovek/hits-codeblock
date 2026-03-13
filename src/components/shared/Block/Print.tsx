@@ -1,6 +1,6 @@
 import type { PrintNode } from "../../../types/ast";
 import styles from "./Block.module.css";
-import { useBlockContext } from "../../../context/BlockContext";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import {
   renderExpression,
   stringToExpression,
@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
 
 export default function Print({ node }: { node: PrintNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [inputValue, setInputValue] = useState(
     renderExpression(node.expression),

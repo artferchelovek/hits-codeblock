@@ -2,7 +2,7 @@ import BaseBlockLayout from "./BaseBlockLayout.tsx";
 
 import type { GetSizeNode } from "../../../types/ast.ts";
 
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import { useEffect, useState } from "react";
 import {
   renderExpression,
@@ -10,7 +10,7 @@ import {
 } from "../../../logic/expression.ts";
 
 export default function GetSize({ node }: { node: GetSizeNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
   const [target, setTarget] = useState<string>("");
   const [object, setObject] = useState<string>("");
 

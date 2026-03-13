@@ -1,5 +1,5 @@
 import BaseNodeLayout from "./BaseBlockLayout.tsx";
-import { useBlockContext } from "../../../context/BlockContext";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import {
   renderExpression,
   stringToExpression,
@@ -11,7 +11,7 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
   const [targetValue, setTargetValue] = useState("");
   const [inputValue, setInputValue] = useState(renderExpression(node.value));
 
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   useEffect(() => {
     setInputValue(renderExpression(node.value));

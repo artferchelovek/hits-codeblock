@@ -5,10 +5,10 @@ import {
   renderExpression,
   stringToExpression,
 } from "../../../logic/expression.ts";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 
 export default function For({ node }: { node: ForNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [iterator, setIterator] = useState(renderExpression(node.iterator));
   const [from, setFrom] = useState(renderExpression(node.from));

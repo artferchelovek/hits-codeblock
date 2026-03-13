@@ -1,6 +1,6 @@
 import type { ReturnNode } from "../../../types/ast.ts";
 import BaseBlockLayout from "./BaseBlockLayout.tsx";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import styles from "./Block.module.css";
 import {
   renderExpression,
@@ -9,7 +9,7 @@ import {
 import { useState, useEffect } from "react";
 
 export default function Return({ node }: { node: ReturnNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
   const [inputValue, setInputValue] = useState(
     node.argument ? renderExpression(node.argument) : "",

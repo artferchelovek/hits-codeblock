@@ -1,5 +1,6 @@
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
-import { useBlockContext } from "../../context/BlockContext";
+import { useProgramContext } from "../../context/ProgramContext";
+import { useInteractionContext } from "../../context/InteractionContext";
 import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
 import React, { useEffect, useRef, useState } from "react";
@@ -26,7 +27,8 @@ interface EditorSpaceProps {
 }
 
 export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
-  const { program, updateStatement, activeNode } = useBlockContext();
+  const { program, updateStatement } = useProgramContext();
+  const { activeNode } = useInteractionContext();
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
   const [isPanning, setIsPanning] = useState(false);
