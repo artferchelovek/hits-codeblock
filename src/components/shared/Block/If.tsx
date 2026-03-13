@@ -5,12 +5,11 @@ import {
   renderExpression,
   stringToExpression,
 } from "../../../logic/expression.ts";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 
 export default function If({ node }: { node: IfNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
-  const [operator, setOperator] = useState<">" | "<" | ">=" | "<=" | "==">(">");
   const [leftCondition, setLeftCondition] = useState(
     renderExpression(node.condition.left),
   );
@@ -19,11 +18,17 @@ export default function If({ node }: { node: IfNode }) {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLeftCondition(renderExpression(node.condition.left));
   }, [node.condition.left]);
+
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRightCondition(renderExpression(node.condition.right));
   }, [node.condition.right]);
+
+  const operator = node.condition.operator;
 
   return (
     <TripleBlockLayout node={node}>
@@ -47,14 +52,22 @@ export default function If({ node }: { node: IfNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       />
       <select
         value={operator}
         onChange={(e) => {
-          const newOperator = e.target.value as ">" | "<" | ">=" | "<=" | "==";
-          setOperator(newOperator);
+          const newOperator = e.target.value as
+            | ">"
+            | "<"
+            | ">="
+            | "<="
+            | "=="
+            | "&&"
+            | "||";
           try {
             updateStatement(node.id, (n) => {
               if (n.type !== "If") return n;
@@ -67,13 +80,17 @@ export default function If({ node }: { node: IfNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       >
         <option value=">">&gt;</option>
         <option value="<">&lt;</option>
         <option value=">=">&ge;</option>
         <option value="<=">&le;</option>
+        <option value="&&">&&</option>
+        <option value="||">||</option>
         <option value="==">==</option>
       </select>
       <input
@@ -95,7 +112,9 @@ export default function If({ node }: { node: IfNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         type="text"
       />

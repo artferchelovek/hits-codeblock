@@ -1,0 +1,263 @@
+{
+  "type": "Program",
+  "name": "Palindrome Check",
+  "body": [
+    {
+      "id": "start-node",
+      "type": "StartNode",
+      "x": 4755,
+      "y": 5216,
+      "nextId": "decl-str"
+    },
+    {
+      "id": "decl-str",
+      "type": "VariableDeclaration",
+      "name": "s, res",
+      "x": 5190,
+      "y": 5218,
+      "nextId": "init-str"
+    },
+    {
+      "id": "init-str",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "s"
+      },
+      "value": {
+        "type": "String",
+        "value": "1001"
+      },
+      "x": 5629,
+      "y": 5219,
+      "nextId": "call-is-pal"
+    },
+    {
+      "id": "call-is-pal",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "res"
+      },
+      "value": {
+        "type": "CallExpression",
+        "callee": "isPalindrome",
+        "args": [
+          {
+            "type": "Identifier",
+            "name": "s"
+          }
+        ]
+      },
+      "x": 6044,
+      "y": 5224,
+      "nextId": "print-res"
+    },
+    {
+      "id": "print-res",
+      "type": "Print",
+      "expression": {
+        "type": "Identifier",
+        "name": "res"
+      },
+      "x": 6460,
+      "y": 5238,
+      "nextId": null
+    },
+    {
+      "id": "f-pal-decl",
+      "type": "FunctionDeclaration",
+      "name": "isPalindrome",
+      "params": [
+        "str"
+      ],
+      "x": 6757,
+      "y": 4835,
+      "nextId": "f-pal-vars"
+    },
+    {
+      "id": "f-pal-vars",
+      "type": "VariableDeclaration",
+      "name": "left, right, n",
+      "x": 7231,
+      "y": 4836,
+      "nextId": "f-pal-len"
+    },
+    {
+      "id": "f-pal-len",
+      "type": "getSize",
+      "target": {
+        "type": "Identifier",
+        "name": "n"
+      },
+      "object": {
+        "type": "Identifier",
+        "name": "str"
+      },
+      "x": 7629,
+      "y": 4853,
+      "nextId": "f-pal-init-l"
+    },
+    {
+      "id": "f-pal-init-l",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "left"
+      },
+      "value": {
+        "type": "Literal",
+        "value": 0
+      },
+      "x": 8044,
+      "y": 4864,
+      "nextId": "f-pal-init-r"
+    },
+    {
+      "id": "f-pal-init-r",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "right"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "n"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 8414,
+      "y": 4742,
+      "nextId": "f-pal-while"
+    },
+    {
+      "id": "f-pal-while",
+      "type": "While",
+      "condition": {
+        "type": "BinaryExpression",
+        "operator": "<",
+        "left": {
+          "type": "Identifier",
+          "name": "left"
+        },
+        "right": {
+          "type": "Identifier",
+          "name": "right"
+        }
+      },
+      "bodyId": "f-pal-if",
+      "x": 8792,
+      "y": 4584,
+      "nextId": "f-pal-ret-true"
+    },
+    {
+      "id": "f-pal-if",
+      "type": "If",
+      "condition": {
+        "type": "BinaryExpression",
+        "operator": "!=",
+        "left": {
+          "type": "MemberExpression",
+          "object": {
+            "type": "Identifier",
+            "name": "str"
+          },
+          "index": {
+            "type": "Identifier",
+            "name": "left"
+          }
+        },
+        "right": {
+          "type": "MemberExpression",
+          "object": {
+            "type": "Identifier",
+            "name": "str"
+          },
+          "index": {
+            "type": "Identifier",
+            "name": "right"
+          }
+        }
+      },
+      "trueId": "f-pal-ret-false",
+      "falseId": "f-pal-inc",
+      "x": 9144,
+      "y": 4460,
+      "nextId": null
+    },
+    {
+      "id": "f-pal-ret-false",
+      "type": "Return",
+      "argument": {
+        "type": "Boolean",
+        "value": false
+      },
+      "x": 9519,
+      "y": 4454,
+      "nextId": null
+    },
+    {
+      "id": "f-pal-inc",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "left"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "+",
+        "left": {
+          "type": "Identifier",
+          "name": "left"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 9519,
+      "y": 4354,
+      "nextId": "f-pal-dec"
+    },
+    {
+      "id": "f-pal-dec",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "right"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "right"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 9903,
+      "y": 4353,
+      "nextId": null
+    },
+    {
+      "id": "f-pal-ret-true",
+      "type": "Return",
+      "argument": {
+        "type": "Boolean",
+        "value": true
+      },
+      "x": 8360,
+      "y": 5017,
+      "nextId": null
+    }
+  ]
+}

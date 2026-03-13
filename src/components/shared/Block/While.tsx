@@ -5,23 +5,28 @@ import {
   renderExpression,
   stringToExpression,
 } from "../../../logic/expression.ts";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 
 export default function While({ node }: { node: WhileNode }) {
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
 
-  const [operator, setOperator] = useState<">" | "<" | ">=" | "<=" | "==">(">");
+  const [operator, setOperator] = useState<
+    ">" | "<" | ">=" | "<=" | "==" | "&&" | "||"
+  >(">");
   const [leftCondition, setLeftCondition] = useState(
     renderExpression(node.condition.left),
   );
   const [rightCondition, setRightCondition] = useState(
     renderExpression(node.condition.right),
+
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLeftCondition(renderExpression(node.condition.left));
   }, [node.condition.left]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRightCondition(renderExpression(node.condition.right));
   }, [node.condition.right]);
 
@@ -47,13 +52,22 @@ export default function While({ node }: { node: WhileNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       />
       <select
         value={operator}
         onChange={(e) => {
-          const newOperator = e.target.value as ">" | "<" | ">=" | "<=" | "==";
+          const newOperator = e.target.value as
+            | ">"
+            | "<"
+            | ">="
+            | "<="
+            | "=="
+            | "&&"
+            | "||";
           setOperator(newOperator);
           try {
             updateStatement(node.id, (n) => {
@@ -67,13 +81,17 @@ export default function While({ node }: { node: WhileNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       >
         <option value=">">&gt;</option>
         <option value="<">&lt;</option>
         <option value=">=">&ge;</option>
         <option value="<=">&le;</option>
+        <option value="&&">&&</option>
+        <option value="||">||</option>
         <option value="==">==</option>
       </select>
       <input
@@ -95,7 +113,9 @@ export default function While({ node }: { node: WhileNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         type="text"
       />

@@ -1,5 +1,5 @@
 import BaseNodeLayout from "./BaseBlockLayout.tsx";
-import { useBlockContext } from "../../../context/BlockContext";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
 import {
   renderExpression,
   stringToExpression,
@@ -11,9 +11,11 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
   const [targetValue, setTargetValue] = useState("");
   const [inputValue, setInputValue] = useState(renderExpression(node.value));
 
-  const { updateStatement } = useBlockContext();
+  const { updateStatement } = useProgramContext();
+
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(renderExpression(node.value));
     setTargetValue(renderExpression(node.target));
   }, [node.value, node.target]);
@@ -36,7 +38,9 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
                 target: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // value is not a valid expression yet
+          }
         }}
         value={targetValue}
         type="text"
@@ -63,7 +67,9 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
                 value: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // value is not a valid expression yet
+          }
         }}
         value={inputValue}
         type="text"

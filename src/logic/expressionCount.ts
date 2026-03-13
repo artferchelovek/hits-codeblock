@@ -5,6 +5,7 @@ import type {
   StringNode,
 } from "../types/ast.ts";
 import type { VariableActions } from "../Class/VariableActions.ts";
+
 type CorrectExpression = string | number | boolean;
 
 function add(
@@ -28,7 +29,7 @@ function subtract(
     return first_exp - last_exp;
   }
 
-  throw new Error(`Cannot subtract ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot subtract ${typeof first_exp} - ${typeof last_exp}`);
 }
 
 function multiply(
@@ -38,7 +39,7 @@ function multiply(
   if (typeof last_exp === "number" && typeof first_exp === "number") {
     return first_exp * last_exp;
   }
-  throw new Error(`Cannot add ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot add ${typeof first_exp} * ${typeof last_exp}`);
 }
 
 function modulo(
@@ -52,7 +53,7 @@ function modulo(
     return Number(first_exp) % Number(last_exp);
   }
 
-  throw new Error(`Cannot modulo ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot modulo ${typeof first_exp} % ${typeof last_exp}`);
 }
 
 function divide(
@@ -67,7 +68,7 @@ function divide(
     return Number(first_exp) / Number(last_exp);
   }
 
-  throw new Error(`Cannot divide ${typeof first_exp} + ${typeof last_exp}`);
+  throw new Error(`Cannot divide ${typeof first_exp} / ${typeof last_exp}`);
 }
 
 export function Calculate(
@@ -88,12 +89,24 @@ export function Calculate(
     return expression;
   }
 
+  if (expression.type === "UnaryExpression") {
+    const result = Calculate(expression.value, variableData);
+    if (result.type === "Literal") {
+      return {
+        ...result,
+        value: -result.value,
+      };
+    }
+  }
   if (expression.type === "MemberExpression") {
     const index = Calculate(expression.index, variableData);
 
-    if (expression.object.type === "Identifier") {
+    if (expression.object.type === "Identifier" && index.type === "Literal") {
       const name = expression.object.name;
-      const variable = variableData.getVariableByName(name, index);
+      const variable = variableData.getVariableByName(
+        name,
+        index as LiteralNode,
+      );
       if (variable?.type === "Literal" || variable?.type === "String") {
         return variable;
       }

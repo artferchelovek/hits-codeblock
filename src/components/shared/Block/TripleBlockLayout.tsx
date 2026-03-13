@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 import styles from "./Block.module.css";
-import { useBlockContext } from "../../../context/BlockContext.tsx";
+import { useProgramContext } from "../../../context/ProgramContext.tsx";
+import { useInteractionContext } from "../../../context/InteractionContext.tsx";
+import SvgMove from "../../../svg/SvgMove.tsx";
 
 type Props = {
   node: {
@@ -14,12 +16,14 @@ type Props = {
 };
 
 export default function TripleBlockLayout({ node, children }: Props) {
-  const { removeStatement, activeNode, errorNode } = useBlockContext();
+  const { removeStatement } = useProgramContext();
+  const { activeNode, errorNode, zoom } = useInteractionContext();
 
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: node.id,
-    data: { type: "node" },
-  });
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: node.id,
+      data: { type: "node" },
+    });
 
   const { setNodeRef: setInputRef } = useDroppable({
     id: `input-${node.id}`,
@@ -57,68 +61,97 @@ export default function TripleBlockLayout({ node, children }: Props) {
     <div
       ref={setNodeRef}
       {...attributes}
-      className={`${styles.block} ${activeNode === node.id ? styles.active : ""} ${isError ? styles.error : ""}`}
       style={{
+        zIndex: isDragging ? 9999 : 1,
         position: "absolute",
         left: node.x,
         top: node.y,
         transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          ? `translate3d(${transform.x / zoom}px, ${transform.y / zoom}px, 0)`
           : undefined,
       }}
+      className={`${styles.dragContainer} ${isDragging ? styles.dragging : ""}`}
     >
       <div
-        ref={setInputRef}
-        id={`input-${node.id}`}
-        className={styles.inputConnector}
-      />
-
-      {isError && (
-        <div className={styles.errorMessage}>{errorNode.message}</div>
-      )}
-
-      <div className={styles.label}>
-        <div className={styles.labelFlex}>
-          <div
-            onClick={() => {
-              removeStatement(node.id);
-            }}
-            className={styles.buttonDelete}
-          >
-            -
-          </div>
-          <p className={styles.labelP}>{node.type}</p>
-        </div>
-        <p {...listeners}>☰</p>
-      </div>
-
-      <div className={styles.content}>{children}</div>
-
-      <div className={styles.outputConnectors}>
+        className={`${styles.block} ${activeNode === node.id ? styles.active : ""} ${isError ? styles.error : ""}`}
+      >
         <div
-          id={`out-true-${node.id}`}
-          ref={setOutRef1}
-          {...outListeners1}
-          {...outAttr1}
-          className={styles.output}
-          title="True"
+          ref={setInputRef}
+          id={`input-${node.id}`}
+          className={styles.inputConnector}
         />
-        <div
-          id={`out-${node.id}`}
-          ref={setOutRef}
-          {...outListeners}
-          {...outAttr}
-          className={styles.output}
-        />
-        {node.type === "If" && (
-          <div
-            id={`out-false-${node.id}`}
-            ref={setOutRef2}
-            {...outListeners2}
-            {...outAttr2}
-            className={styles.output}
-          />
+
+        {isError && (
+          <div className={styles.errorMessage}>{errorNode.message}</div>
         )}
+
+        <div className={styles.label}>
+          <div className={styles.labelFlex}>
+            <div
+              onClick={() => {
+                removeStatement(node.id);
+              }}
+              className={styles.buttonDelete}
+            >
+              -
+            </div>
+            <p className={styles.labelP}>{node.type}</p>
+          </div>
+          <p
+            {...listeners}
+            style={{
+              cursor: "grab",
+            }}
+          >
+            <SvgMove
+              width={20}
+              height={20}
+              fill="var(--md-sys-color-on-secondary-container)"
+            />
+          </p>
+        </div>
+
+        <div className={styles.content}>{children}</div>
+
+        <div className={styles.outputConnectors}>
+          <div
+            id={`out-true-${node.id}`}
+            ref={setOutRef1}
+            {...outListeners1}
+            {...outAttr1}
+            className={styles.output}
+            style={
+              node.type === "If"
+                ? {
+                    background: "rgba(52,201,65)",
+                  }
+                : { background: "rgba(146,52,201)" }
+            }
+            title="True"
+          />
+          <div
+            id={`out-${node.id}`}
+            ref={setOutRef}
+            {...outListeners}
+            {...outAttr}
+            className={styles.output}
+            style={node.type === "If" ? {
+              background: "rgba(146,52,201)",
+            } : {}}
+          />
+          {node.type === "If" && (
+            <div
+              id={`out-false-${node.id}`}
+              ref={setOutRef2}
+              {...outListeners2}
+              {...outAttr2}
+              className={styles.output}
+              style={{
+                background: "rgba(201,52,52)",
+              }}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
