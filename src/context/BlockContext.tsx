@@ -17,7 +17,6 @@ interface BlockContextType {
   refreshProgram: (newProgram: ProgramNode) => void;
   updateProgramName: (programName: string) => void;
   activeNode: string | null;
-  lastRefresh: number;
   errorNode: {
     node: string | null;
     message: string | undefined;
@@ -45,7 +44,6 @@ export const BlockContextProvider = ({
     body: [],
   });
   const [activeNode, setActiveNode] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [errorNode, setErrorNodeState] = useState<{
     node: string | null;
     message: string | undefined;
@@ -95,7 +93,6 @@ export const BlockContextProvider = ({
 
   const removeProgram = () => {
     setProgram((prev) => ({ ...prev, body: [] }));
-    setLastRefresh(Date.now());
   };
 
   const getProgram = (): ProgramNode => {
@@ -104,7 +101,6 @@ export const BlockContextProvider = ({
 
   const refreshProgram = (newProgram: ProgramNode) => {
     setProgram(newProgram);
-    setLastRefresh(Date.now());
   };
 
   const updateProgramName = (programName: string) => {
@@ -127,7 +123,6 @@ export const BlockContextProvider = ({
         updateProgramName,
         activeNode,
         setActiveNode,
-        lastRefresh,
         errorNode,
         setErrorNode,
       }}

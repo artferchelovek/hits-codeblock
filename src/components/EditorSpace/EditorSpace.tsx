@@ -26,7 +26,7 @@ interface EditorSpaceProps {
 }
 
 export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
-  const { program, updateStatement, activeNode, lastRefresh } = useBlockContext();
+  const { program, updateStatement, activeNode } = useBlockContext();
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -39,21 +39,6 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
   const movingLayerRef = useRef<HTMLDivElement>(null);
 
   const lastMouse = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const startNode = program.body.find((n) => n.type === "StartNode");
-    if (startNode && containerRef.current) {
-      const { width, height } = containerRef.current.getBoundingClientRect();
-      setIsAutoPanning(true);
-      setPanMain({
-        x: width / 2 - startNode.x - 150,
-        y: height / 2 - startNode.y - 37.5,
-      });
-
-      const timeout = setTimeout(() => setIsAutoPanning(false), 500);
-      return () => clearTimeout(timeout);
-    }
-  }, [lastRefresh, setPanMain]);
 
   useEffect(() => {
     if (activeNode) {
@@ -160,6 +145,8 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
     },
     onDragEnd(event) {
       const { active, over } = event;
+      console.log(JSON.stringify(active, null, 2));
+      console.log(JSON.stringify(over, null, 2));
 
       if (active.data.current?.type === "node") {
         setDragTick(0);

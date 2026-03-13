@@ -10,12 +10,15 @@ import { useBlockContext } from "../../../context/BlockContext.tsx";
 export default function While({ node }: { node: WhileNode }) {
   const { updateStatement } = useBlockContext();
 
-  const [operator, setOperator] = useState<">" | "<" | ">=" | "<=" | "==">(">");
+  const [operator, setOperator] = useState<
+    ">" | "<" | ">=" | "<=" | "==" | "&&" | "||"
+  >(">");
   const [leftCondition, setLeftCondition] = useState(
     renderExpression(node.condition.left),
   );
   const [rightCondition, setRightCondition] = useState(
     renderExpression(node.condition.right),
+
   );
 
   useEffect(() => {
@@ -53,7 +56,14 @@ export default function While({ node }: { node: WhileNode }) {
       <select
         value={operator}
         onChange={(e) => {
-          const newOperator = e.target.value as ">" | "<" | ">=" | "<=" | "==";
+          const newOperator = e.target.value as
+            | ">"
+            | "<"
+            | ">="
+            | "<="
+            | "=="
+            | "&&"
+            | "||";
           setOperator(newOperator);
           try {
             updateStatement(node.id, (n) => {
@@ -74,6 +84,8 @@ export default function While({ node }: { node: WhileNode }) {
         <option value="<">&lt;</option>
         <option value=">=">&ge;</option>
         <option value="<=">&le;</option>
+        <option value="&&">&&</option>
+        <option value="||">||</option>
         <option value="==">==</option>
       </select>
       <input

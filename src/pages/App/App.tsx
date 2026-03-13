@@ -1,7 +1,7 @@
 import "./App.module.css";
 import Overlay from "../../components/Overlay/Overlay";
 import EditorSpace from "../../components/EditorSpace/EditorSpace";
-import { DndContext } from "@dnd-kit/core";
+import { DndContext, pointerWithin } from "@dnd-kit/core";
 import { useBlockContext } from "../../context/BlockContext";
 import { createNode } from "../../logic/nodeFactory";
 import { useState } from "react";
@@ -44,7 +44,7 @@ export default function App() {
   };
 
   return (
-    <DndContext onDragEnd={dragEnd}>
+    <DndContext onDragEnd={dragEnd} collisionDetection={pointerWithin}>
       <Overlay />
       <EditorSpace setPanMain={setPanMain} panMain={panMain} />
       <ToolBar />
