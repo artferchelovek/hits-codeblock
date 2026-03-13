@@ -120,6 +120,13 @@ export default function TripleBlockLayout({ node, children }: Props) {
             {...outListeners1}
             {...outAttr1}
             className={styles.output}
+            style={
+              node.type === "If"
+                ? {
+                    background: "rgba(52,201,65)",
+                  }
+                : { background: "rgba(146,52,201)" }
+            }
             title="True"
           />
           <div
@@ -128,6 +135,9 @@ export default function TripleBlockLayout({ node, children }: Props) {
             {...outListeners}
             {...outAttr}
             className={styles.output}
+            style={node.type === "If" ? {
+              background: "rgba(146,52,201)",
+            } : {}}
           />
           {node.type === "If" && (
             <div
@@ -136,6 +146,9 @@ export default function TripleBlockLayout({ node, children }: Props) {
               {...outListeners2}
               {...outAttr2}
               className={styles.output}
+              style={{
+                background: "rgba(201,52,52)",
+              }}
             />
           )}
         </div>

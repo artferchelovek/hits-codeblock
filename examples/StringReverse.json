@@ -1,0 +1,290 @@
+{
+  "type": "Program",
+  "name": "String Reverse",
+  "body": [
+    {
+      "id": "start-node",
+      "type": "StartNode",
+      "x": 4755,
+      "y": 5216,
+      "nextId": "decl-vars"
+    },
+    {
+      "id": "decl-vars",
+      "type": "VariableDeclaration",
+      "name": "s, reversed",
+      "x": 5190,
+      "y": 5218,
+      "nextId": "init-str"
+    },
+    {
+      "id": "init-str",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "s"
+      },
+      "value": {
+        "type": "String",
+        "value": "hello"
+      },
+      "x": 5629,
+      "y": 5219,
+      "nextId": "call-reverse"
+    },
+    {
+      "id": "call-reverse",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "reversed"
+      },
+      "value": {
+        "type": "CallExpression",
+        "callee": "reverseString",
+        "args": [
+          {
+            "type": "Identifier",
+            "name": "s"
+          }
+        ]
+      },
+      "x": 6044,
+      "y": 5224,
+      "nextId": "print-res"
+    },
+    {
+      "id": "print-res",
+      "type": "Print",
+      "expression": {
+        "type": "Identifier",
+        "name": "reversed"
+      },
+      "x": 6460,
+      "y": 5238,
+      "nextId": null
+    },
+    {
+      "id": "f-rev-decl",
+      "type": "FunctionDeclaration",
+      "name": "reverseString",
+      "params": [
+        "str"
+      ],
+      "x": 6757,
+      "y": 4835,
+      "nextId": "f-rev-vars"
+    },
+    {
+      "id": "f-rev-vars",
+      "type": "VariableDeclaration",
+      "name": "i, j, len, temp",
+      "x": 7231,
+      "y": 4836,
+      "nextId": "f-rev-len"
+    },
+    {
+      "id": "f-rev-len",
+      "type": "getSize",
+      "target": {
+        "type": "Identifier",
+        "name": "len"
+      },
+      "object": {
+        "type": "Identifier",
+        "name": "str"
+      },
+      "x": 7629,
+      "y": 4853,
+      "nextId": "f-rev-init-i"
+    },
+    {
+      "id": "f-rev-init-i",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "i"
+      },
+      "value": {
+        "type": "Literal",
+        "value": 0
+      },
+      "x": 8044,
+      "y": 4864,
+      "nextId": "f-rev-init-j"
+    },
+    {
+      "id": "f-rev-init-j",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "j"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "len"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 8414,
+      "y": 4742,
+      "nextId": "f-rev-while"
+    },
+    {
+      "id": "f-rev-while",
+      "type": "While",
+      "condition": {
+        "type": "BinaryExpression",
+        "operator": "<",
+        "left": {
+          "type": "Identifier",
+          "name": "i"
+        },
+        "right": {
+          "type": "Identifier",
+          "name": "j"
+        }
+      },
+      "bodyId": "f-rev-store-temp",
+      "x": 8792,
+      "y": 4584,
+      "nextId": "f-rev-ret"
+    },
+    {
+      "id": "f-rev-store-temp",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "temp"
+      },
+      "value": {
+        "type": "MemberExpression",
+        "object": {
+          "type": "Identifier",
+          "name": "str"
+        },
+        "index": {
+          "type": "Identifier",
+          "name": "i"
+        }
+      },
+      "x": 9144,
+      "y": 4460,
+      "nextId": "f-rev-swap-1"
+    },
+    {
+      "id": "f-rev-swap-1",
+      "type": "Assignment",
+      "target": {
+        "type": "MemberExpression",
+        "object": {
+          "type": "Identifier",
+          "name": "str"
+        },
+        "index": {
+          "type": "Identifier",
+          "name": "i"
+        }
+      },
+      "value": {
+        "type": "MemberExpression",
+        "object": {
+          "type": "Identifier",
+          "name": "str"
+        },
+        "index": {
+          "type": "Identifier",
+          "name": "j"
+        }
+      },
+      "x": 9519,
+      "y": 4454,
+      "nextId": "f-rev-swap-2"
+    },
+    {
+      "id": "f-rev-swap-2",
+      "type": "Assignment",
+      "target": {
+        "type": "MemberExpression",
+        "object": {
+          "type": "Identifier",
+          "name": "str"
+        },
+        "index": {
+          "type": "Identifier",
+          "name": "j"
+        }
+      },
+      "value": {
+        "type": "Identifier",
+        "name": "temp"
+      },
+      "x": 9903,
+      "y": 4453,
+      "nextId": "f-rev-inc-i"
+    },
+    {
+      "id": "f-rev-inc-i",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "i"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "+",
+        "left": {
+          "type": "Identifier",
+          "name": "i"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 10306,
+      "y": 4454,
+      "nextId": "f-rev-dec-j"
+    },
+    {
+      "id": "f-rev-dec-j",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "j"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "j"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 10306,
+      "y": 4654,
+      "nextId": null
+    },
+    {
+      "id": "f-rev-ret",
+      "type": "Return",
+      "argument": {
+        "type": "Identifier",
+        "name": "str"
+      },
+      "x": 8360,
+      "y": 5017,
+      "nextId": null
+    }
+  ]
+}

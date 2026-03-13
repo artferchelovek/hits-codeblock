@@ -1,0 +1,445 @@
+{
+  "type": "Program",
+  "name": "Binary Search",
+  "body": [
+    {
+      "id": "start-node",
+      "type": "StartNode",
+      "x": 4755,
+      "y": 5216,
+      "nextId": "decl-arr"
+    },
+    {
+      "id": "decl-arr",
+      "type": "VariableDeclaration",
+      "name": "arr",
+      "size": {
+        "type": "Literal",
+        "value": 10
+      },
+      "x": 5190,
+      "y": 5218,
+      "nextId": "init-arr"
+    },
+    {
+      "id": "init-arr",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "arr"
+      },
+      "value": {
+        "type": "Array",
+        "value": [
+          {
+            "type": "Literal",
+            "value": 2
+          },
+          {
+            "type": "Literal",
+            "value": 5
+          },
+          {
+            "type": "Literal",
+            "value": 8
+          },
+          {
+            "type": "Literal",
+            "value": 12
+          },
+          {
+            "type": "Literal",
+            "value": 16
+          },
+          {
+            "type": "Literal",
+            "value": 23
+          },
+          {
+            "type": "Literal",
+            "value": 38
+          },
+          {
+            "type": "Literal",
+            "value": 56
+          },
+          {
+            "type": "Literal",
+            "value": 72
+          },
+          {
+            "type": "Literal",
+            "value": 91
+          }
+        ]
+      },
+      "x": 5629,
+      "y": 5219,
+      "nextId": "decl-vars"
+    },
+    {
+      "id": "decl-vars",
+      "type": "VariableDeclaration",
+      "name": "target, n, result",
+      "x": 6044,
+      "y": 5224,
+      "nextId": "init-target"
+    },
+    {
+      "id": "init-target",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "target"
+      },
+      "value": {
+        "type": "Literal",
+        "value": 23
+      },
+      "x": 6460,
+      "y": 5238,
+      "nextId": "get-n"
+    },
+    {
+      "id": "get-n",
+      "type": "getSize",
+      "target": {
+        "type": "Identifier",
+        "name": "n"
+      },
+      "object": {
+        "type": "Identifier",
+        "name": "arr"
+      },
+      "x": 6893,
+      "y": 5232,
+      "nextId": "call-search"
+    },
+    {
+      "id": "call-search",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "result"
+      },
+      "value": {
+        "type": "CallExpression",
+        "callee": "binarySearch",
+        "args": [
+          {
+            "type": "Identifier",
+            "name": "arr"
+          },
+          {
+            "type": "Identifier",
+            "name": "target"
+          },
+          {
+            "type": "Identifier",
+            "name": "n"
+          }
+        ]
+      },
+      "x": 6885,
+      "y": 5431,
+      "nextId": "print-res"
+    },
+    {
+      "id": "print-res",
+      "type": "Print",
+      "expression": {
+        "type": "Identifier",
+        "name": "result"
+      },
+      "x": 7231,
+      "y": 5431,
+      "nextId": null
+    },
+    {
+      "id": "f-bs-decl",
+      "type": "FunctionDeclaration",
+      "name": "binarySearch",
+      "params": [
+        "arr",
+        "x",
+        "n"
+      ],
+      "x": 6757,
+      "y": 4835,
+      "nextId": "f-bs-init-vars"
+    },
+    {
+      "id": "f-bs-init-vars",
+      "type": "VariableDeclaration",
+      "name": "low, high, mid",
+      "x": 7231,
+      "y": 4836,
+      "nextId": "f-bs-set-low"
+    },
+    {
+      "id": "f-bs-set-low",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "low"
+      },
+      "value": {
+        "type": "Literal",
+        "value": 0
+      },
+      "x": 7629,
+      "y": 4853,
+      "nextId": "f-bs-set-high"
+    },
+    {
+      "id": "f-bs-set-high",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "high"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "n"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 8044,
+      "y": 4864,
+      "nextId": "f-bs-while"
+    },
+    {
+      "id": "f-bs-while",
+      "type": "While",
+      "condition": {
+        "type": "BinaryExpression",
+        "operator": "<=",
+        "left": {
+          "type": "Identifier",
+          "name": "low"
+        },
+        "right": {
+          "type": "Identifier",
+          "name": "high"
+        }
+      },
+      "bodyId": "f-bs-calc-mid",
+      "x": 8414,
+      "y": 4742,
+      "nextId": "f-bs-ret-fail"
+    },
+    {
+      "id": "f-bs-calc-mid",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "mid"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "+",
+        "left": {
+          "type": "Identifier",
+          "name": "low"
+        },
+        "right": {
+          "type": "CallExpression",
+          "callee": "floor",
+          "args": [
+            {
+              "type": "BinaryExpression",
+              "operator": "/",
+              "left": {
+                "type": "BinaryExpression",
+                "operator": "-",
+                "left": {
+                  "type": "Identifier",
+                  "name": "high"
+                },
+                "right": {
+                  "type": "Identifier",
+                  "name": "low"
+                }
+              },
+              "right": {
+                "type": "Literal",
+                "value": 2
+              }
+            }
+          ]
+        }
+      },
+      "x": 8792,
+      "y": 4584,
+      "nextId": "f-bs-if-found"
+    },
+    {
+      "id": "f-bs-if-found",
+      "type": "If",
+      "condition": {
+        "type": "BinaryExpression",
+        "operator": "==",
+        "left": {
+          "type": "MemberExpression",
+          "object": {
+            "type": "Identifier",
+            "name": "arr"
+          },
+          "index": {
+            "type": "Identifier",
+            "name": "mid"
+          }
+        },
+        "right": {
+          "type": "Identifier",
+          "name": "x"
+        }
+      },
+      "trueId": "f-bs-ret-success",
+      "falseId": "f-bs-if-less",
+      "x": 9144,
+      "y": 4460,
+      "nextId": null
+    },
+    {
+      "id": "f-bs-ret-success",
+      "type": "Return",
+      "argument": {
+        "type": "Identifier",
+        "name": "mid"
+      },
+      "x": 9519,
+      "y": 4454,
+      "nextId": null
+    },
+    {
+      "id": "f-bs-if-less",
+      "type": "If",
+      "condition": {
+        "type": "BinaryExpression",
+        "operator": "<",
+        "left": {
+          "type": "MemberExpression",
+          "object": {
+            "type": "Identifier",
+            "name": "arr"
+          },
+          "index": {
+            "type": "Identifier",
+            "name": "mid"
+          }
+        },
+        "right": {
+          "type": "Identifier",
+          "name": "x"
+        }
+      },
+      "trueId": "f-bs-set-low-new",
+      "falseId": "f-bs-set-high-new",
+      "x": 9903,
+      "y": 4453,
+      "nextId": null
+    },
+    {
+      "id": "f-bs-set-low-new",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "low"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "+",
+        "left": {
+          "type": "Identifier",
+          "name": "mid"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 10306,
+      "y": 4454,
+      "nextId": null
+    },
+    {
+      "id": "f-bs-set-high-new",
+      "type": "Assignment",
+      "target": {
+        "type": "Identifier",
+        "name": "high"
+      },
+      "value": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "mid"
+        },
+        "right": {
+          "type": "Literal",
+          "value": 1
+        }
+      },
+      "x": 10306,
+      "y": 4654,
+      "nextId": null
+    },
+    {
+      "id": "f-bs-ret-fail",
+      "type": "Return",
+      "argument": {
+        "type": "Literal",
+        "value": -1
+      },
+      "x": 8360,
+      "y": 5017,
+      "nextId": null
+    },
+    {
+      "id": "f-floor-decl",
+      "type": "FunctionDeclaration",
+      "name": "floor",
+      "params": [
+        "x"
+      ],
+      "x": 6757,
+      "y": 5600,
+      "nextId": "f-floor-ret"
+    },
+    {
+      "id": "f-floor-ret",
+      "type": "Return",
+      "argument": {
+        "type": "BinaryExpression",
+        "operator": "-",
+        "left": {
+          "type": "Identifier",
+          "name": "x"
+        },
+        "right": {
+          "type": "BinaryExpression",
+          "operator": "%",
+          "left": {
+            "type": "Identifier",
+            "name": "x"
+          },
+          "right": {
+            "type": "Literal",
+            "value": 1
+          }
+        }
+      },
+      "x": 7231,
+      "y": 5600,
+      "nextId": null
+    }
+  ]
+}
