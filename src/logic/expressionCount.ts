@@ -89,12 +89,24 @@ export function Calculate(
     return expression;
   }
 
+  if (expression.type === "UnaryExpression") {
+    const result = Calculate(expression.value, variableData);
+    if (result.type === "Literal") {
+      return {
+        ...result,
+        value: -result.value,
+      };
+    }
+  }
   if (expression.type === "MemberExpression") {
     const index = Calculate(expression.index, variableData);
 
     if (expression.object.type === "Identifier" && index.type === "Literal") {
       const name = expression.object.name;
-      const variable = variableData.getVariableByName(name, index);
+      const variable = variableData.getVariableByName(
+        name,
+        index as LiteralNode,
+      );
       if (variable?.type === "Literal" || variable?.type === "String") {
         return variable;
       }

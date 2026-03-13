@@ -532,9 +532,9 @@ export class Interpreter {
       return { type: "Array", value: array };
     }
 
-    if (node.type === "Identifier") {
-      const value = this.variableData.getVariableByName(node.name);
-      if ("value" in value) {
+    if (updateNode.type === "Identifier") {
+      const value = this.variableData.getVariableByName(updateNode.name);
+      if ("value" in value && value.type !== "UnaryExpression") {
         return value;
       }
     }

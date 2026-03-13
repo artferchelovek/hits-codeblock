@@ -148,6 +148,7 @@ export function stringToExpression(expression: string): ExpressionNode {
 
     if (stack === 0 && bracketStack === 0) {
       const twoCharOp = current.substring(i, i + 2);
+
       const ops2 = [">=", "<=", "==", "!=", "&&", "||"];
       if (ops2.includes(twoCharOp)) {
         const priority = getPriority(twoCharOp);
@@ -162,7 +163,11 @@ export function stringToExpression(expression: string): ExpressionNode {
 
       if ("+-*/><%=".includes(char)) {
         const priority = getPriority(char);
-        if (priority <= minPriority) {
+        const lastChar = current.slice(0, i).trim().at(-1) || "";
+        const isUnary =
+          char === "-" && (lastChar === "" || "+-*/><%=".includes(lastChar));
+
+        if (priority <= minPriority && !isUnary) {
           minPriority = priority;
           operatorIndex = i;
           foundOperator = char;
@@ -171,7 +176,7 @@ export function stringToExpression(expression: string): ExpressionNode {
     }
   }
 
-  if (operatorIndex !== -1 && !/^-?\d+(\.\d+)?$/.test(current.trim())) {
+  if (operatorIndex !== -1) {
     return {
       type: "BinaryExpression",
       operator: foundOperator as any, // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -179,6 +184,14 @@ export function stringToExpression(expression: string): ExpressionNode {
       right: stringToExpression(
         current.slice(operatorIndex + foundOperator.length),
       ),
+    };
+  }
+
+  if (current.startsWith("-")) {
+    return {
+      type: "UnaryExpression",
+      operator: "-",
+      value: stringToExpression(current.slice(1)),
     };
   }
 
@@ -325,6 +338,8 @@ export function renderExpression(expr: ExpressionNode): string {
       return `${renderExpression(expr.object)}[${renderExpression(expr.index)}]`;
     case "CallExpression":
       return `${expr.callee}(${expr.args.map(renderExpression).join(", ")})`;
+    case "UnaryExpression":
+      return `${expr.operator}${renderExpression(expr.value)}`;
     default:
       return "";
   }
