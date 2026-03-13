@@ -98,11 +98,18 @@ export type ExpressionNode =
   | ArrayNode
   | MemberExpressionNode
   | BooleanNode
+  | UnaryExpression
   | CallExpressionNode;
 
 export interface LiteralNode {
   type: "Literal";
   value: number;
+}
+
+export interface UnaryExpression {
+  type: "UnaryExpression";
+  operator: "-";
+  value: ExpressionNode;
 }
 
 export interface ArrayNode {
