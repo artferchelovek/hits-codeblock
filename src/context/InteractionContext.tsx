@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+
+type Theme = "light" | "dark";
 
 interface InteractionContextType {
   activeNode: string | null;
@@ -10,6 +12,8 @@ interface InteractionContextType {
   setErrorNode: (node: string | null, message: string | undefined) => void;
   zoom: number;
   setZoom: React.Dispatch<React.SetStateAction<number>>;
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
 const InteractionContext = createContext<InteractionContextType | null>(null);
@@ -35,10 +39,22 @@ export const InteractionContextProvider = ({
     message: undefined,
   });
   const [zoom, setZoom] = useState(1);
+  const [theme, setTheme] = useState<Theme>(
+    (localStorage.getItem("theme") as Theme) || "light"
+  );
 
   const setErrorNode = (node: string | null, message: string | undefined) => {
     setErrorNodeState({ node, message });
   };
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
+
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+    document.documentElement.className = theme;
+  }, [theme]);
 
   return (
     <InteractionContext.Provider
@@ -49,6 +65,8 @@ export const InteractionContextProvider = ({
         setErrorNode,
         zoom,
         setZoom,
+        theme,
+        toggleTheme,
       }}
     >
       {children}

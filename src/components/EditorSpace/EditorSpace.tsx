@@ -271,7 +271,8 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
         height: "100vh",
         position: "relative",
         overflow: "hidden",
-        backgroundImage: "radial-gradient(#d7d7d7 1px, transparent 1px)",
+        backgroundImage:
+          "radial-gradient(var(--md-sys-color-surface-variant) 1px, transparent 1px)",
         backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
         backgroundPosition: `${panMain.x}px ${panMain.y}px`,
         transition: isAutoPanning
