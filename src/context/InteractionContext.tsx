@@ -8,6 +8,8 @@ interface InteractionContextType {
   };
   setActiveNode: (node: string | null) => void;
   setErrorNode: (node: string | null, message: string | undefined) => void;
+  zoom: number;
+  setZoom: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const InteractionContext = createContext<InteractionContextType | null>(null);
@@ -32,6 +34,7 @@ export const InteractionContextProvider = ({
     node: null,
     message: undefined,
   });
+  const [zoom, setZoom] = useState(1);
 
   const setErrorNode = (node: string | null, message: string | undefined) => {
     setErrorNodeState({ node, message });
@@ -44,6 +47,8 @@ export const InteractionContextProvider = ({
         setActiveNode,
         errorNode,
         setErrorNode,
+        zoom,
+        setZoom,
       }}
     >
       {children}

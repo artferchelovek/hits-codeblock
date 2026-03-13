@@ -17,7 +17,7 @@ type Props = {
 
 export default function BaseBlockLayout({ node, children }: Props) {
   const { removeStatement } = useProgramContext();
-  const { activeNode, errorNode } = useInteractionContext();
+  const { activeNode, errorNode, zoom } = useInteractionContext();
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({
@@ -51,7 +51,7 @@ export default function BaseBlockLayout({ node, children }: Props) {
         left: node.x,
         top: node.y,
         transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          ? `translate3d(${transform.x / zoom}px, ${transform.y / zoom}px, 0)`
           : undefined,
       }}
       className={`${styles.dragContainer} ${isDragging ? styles.dragging : ""}`}

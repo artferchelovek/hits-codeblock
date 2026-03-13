@@ -4,12 +4,14 @@ import EditorSpace from "../../components/EditorSpace/EditorSpace";
 import { DndContext, pointerWithin } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
 import { useProgramContext } from "../../context/ProgramContext";
+import { useInteractionContext } from "../../context/InteractionContext";
 import { createNode } from "../../logic/nodeFactory";
 import { useState } from "react";
 import ToolBar from "../../components/Toolbar/ToolBar.tsx";
 
 export default function App() {
   const { addStatement, updateStatement } = useProgramContext();
+  const { zoom } = useInteractionContext();
   const [panMain, setPanMain] = useState({ x: -5000, y: -5000 });
 
   const dragEnd = (event: DragEndEvent) => {
@@ -20,8 +22,8 @@ export default function App() {
     if (active.data.current?.type === "node") {
       updateStatement(String(active.id), (node) => ({
         ...node,
-        x: node.x + delta.x,
-        y: node.y + delta.y,
+        x: node.x + delta.x / zoom,
+        y: node.y + delta.y / zoom,
       }));
       return;
     }
@@ -36,8 +38,8 @@ export default function App() {
 
         if (rect && draggedRect) {
           const newNode = createNode(type);
-          newNode.x = draggedRect.left - rect.left - panMain.x;
-          newNode.y = draggedRect.top - rect.top - panMain.y;
+          newNode.x = (draggedRect.left - rect.left - panMain.x) / zoom;
+          newNode.y = (draggedRect.top - rect.top - panMain.y) / zoom;
           addStatement(newNode);
         }
       }
