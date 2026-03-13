@@ -34,7 +34,7 @@ export class Interpreter {
   >();
 
   public constructor(blocks: ProgramNode) {
-    this.blockData = blocks;
+    this.blockData = JSON.parse(JSON.stringify(blocks));
     this.nodeMap = new Map(this.blockData.body.map((node) => [node.id, node]));
     this.startNode = this.blockData.body.find((i) => i.type === "StartNode");
   }

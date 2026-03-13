@@ -69,11 +69,29 @@ export class VariableActions {
           throw new Error(`Variable "${variableName}" does not array: `);
         }
 
-        if (index && variable.type === "Array") {
-          const indexValue = this.checkAndGetIndex(index, variableName);
-          const array = variable as ArrayNode;
-          array.value[indexValue] = variableValue;
-          return;
+        if (
+          index &&
+          (variable.type === "Array" || variable.type === "String")
+        ) {
+          if (variable.type === "Array") {
+            const indexValue = this.checkAndGetIndex(index, variableName);
+            const array = variable as ArrayNode;
+            array.value[indexValue] = variableValue;
+            return;
+          }
+
+          if (variable.type === "String" && variableValue.type === "String") {
+            const indexValue = this.checkAndGetIndex(index, variableName);
+            const str = String(variable.value);
+            const newChar = String(variableValue.value);
+
+            variable.value =
+              str.substring(0, indexValue) +
+              newChar +
+              str.substring(indexValue + 1);
+
+            return;
+          }
         }
 
         if (variableValue.type === "Array" && variable.type === "Array") {
@@ -107,6 +125,7 @@ export class VariableActions {
         if (index) {
           const indexValue = this.checkAndGetIndex(index, variableName);
           let indexElem: ExpressionNode;
+
           if (
             variable &&
             (variable.type === "Array" || variable.type === "String")
@@ -133,6 +152,7 @@ export class VariableActions {
 
   public getAll(): VariableForDebug[] {
     const variables: VariableForDebug[] = [];
+
     this.variableData.forEach((variable) =>
       variable.forEach((value, name) =>
         variables.push({ type: "VariableForDebug", name: name, value: value }),
