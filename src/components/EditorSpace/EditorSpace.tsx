@@ -165,6 +165,23 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
     lastMouse.current = { x: e.clientX, y: e.clientY };
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).id !== "editor") return;
+    setIsPanning(true);
+    setIsAutoPanning(false);
+    const touch = e.touches[0];
+    lastMouse.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPanning) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - lastMouse.current.x;
+    const dy = touch.clientY - lastMouse.current.y;
+    setPanMain((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    lastMouse.current = { x: touch.clientX, y: touch.clientY };
+  };
+
   const handleMouseUp = () => setIsPanning(false);
 
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -265,6 +282,9 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleMouseUp}
       id="editor"
       style={{
         width: "100vw",

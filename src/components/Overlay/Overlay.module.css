@@ -20,8 +20,6 @@
 .overlay {
     height: calc(100vh - 50px);
     width: 300px;
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
     z-index: 100;
     max-width: 300px;
     position: fixed;
@@ -186,5 +184,37 @@
         color: inherit;
         resize: none;
         outline: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .overlay {
+        width: 200px;
+        max-width: 200px;
+        left: 10px;
+        top: 10px;
+        height: calc(100vh - 100px);
+        gap: 15px;
+
+        .menu {
+            .label {
+                font-size: 18px;
+                padding: 4px 8px;
+            }
+        }
+
+        .navItem {
+            .iconContainer {
+                width: 36px;
+            }
+            p {
+                display: none;
+            }
+        }
+    }
+
+    .terminal {
+        max-width: 200px;
+        max-height: 150px;
     }
 }
