@@ -116,8 +116,6 @@ export class Interpreter {
   }
 
   private *forNode(node: ForNode) {
-    this.variableData.newScope();
-
     if (node.iterator.type !== "BinaryExpression") {
       throw new Error("Iterator should be a BinaryExpression");
     }
@@ -132,8 +130,10 @@ export class Interpreter {
     const nameIterator = node.from.left.name;
 
     this.variableData.declareVariable(nameIterator);
+
     this.variableData.changeVariable(
       nameIterator,
+
       yield* this.calculate(node.from.right),
     );
 
@@ -145,19 +145,26 @@ export class Interpreter {
 
     yield {
       type: node.type,
+
       id: node.id,
+
       variableAll: this.variableData.getAll(),
     };
 
     while (condition.value) {
+      this.variableData.newScope();
+
       if (node.bodyId) {
         const currentNode = this.nodeMap.get(node.bodyId);
+
         try {
           if (currentNode) {
             const res = yield* this.action(currentNode);
+
             if (res === "Break") {
               break;
             }
+
             if (res && res.type === "Return") {
               return res;
             }
@@ -167,20 +174,23 @@ export class Interpreter {
         }
       }
 
+      this.variableData.deleteScope();
+
       const value = yield* this.calculate(node.iterator);
+
       this.variableData.changeVariable(nameIterator, value);
 
       condition = yield* this.calculate(node.to);
+
       if (condition.type !== "Boolean") {
         throw new Error("Condition must be a boolean");
       }
     }
 
-    this.variableData.deleteScope();
+    this.variableData.deleteVariable(nameIterator);
   }
 
   private *whileNode(node: WhileNode) {
-    this.variableData.newScope();
     let conditionRet = yield* this.calculate(node.condition);
     let condition;
     if ("value" in conditionRet) {
@@ -194,6 +204,7 @@ export class Interpreter {
     };
 
     while (condition) {
+      this.variableData.newScope();
       if (node.bodyId) {
         const currentNode = this.nodeMap.get(node.bodyId);
         try {
@@ -214,8 +225,8 @@ export class Interpreter {
       if ("value" in conditionRet) {
         condition = conditionRet.value;
       }
+      this.variableData.deleteScope();
     }
-    this.variableData.deleteScope();
   }
 
   private *action(

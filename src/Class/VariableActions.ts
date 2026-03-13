@@ -158,14 +158,9 @@ export class VariableActions {
     return indexValue;
   }
 
-  public getVariableScope(): VariableForDebug[] {
-    const variables: VariableForDebug[] = [];
-    const currentScope = this.workScope();
+  public deleteVariable(variableName: string): void {
+    const space = this.workScope();
 
-    currentScope.forEach((variable, name) => {
-      variables.push({ type: "VariableForDebug", name: name, value: variable });
-    });
-
-    return variables;
+    space.delete(variableName);
   }
 }
