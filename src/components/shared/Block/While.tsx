@@ -22,9 +22,11 @@ export default function While({ node }: { node: WhileNode }) {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLeftCondition(renderExpression(node.condition.left));
   }, [node.condition.left]);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRightCondition(renderExpression(node.condition.right));
   }, [node.condition.right]);
 
@@ -50,7 +52,9 @@ export default function While({ node }: { node: WhileNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       />
       <select
@@ -77,7 +81,9 @@ export default function While({ node }: { node: WhileNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       >
         <option value=">">&gt;</option>
@@ -107,7 +113,9 @@ export default function While({ node }: { node: WhileNode }) {
                 },
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         type="text"
       />

@@ -11,10 +11,11 @@ import SvgCategoryGeneral from "../../svg/SvgCategoryGeneral.tsx";
 import SvgCategoryVariables from "../../svg/SvgCategoryVariables.tsx";
 import SvgCategoryControl from "../../svg/SvgCategoryControl.tsx";
 import SvgCategoryFunctions from "../../svg/SvgCategoryFunctions.tsx";
+import React from "react";
 
 type Category = "general" | "variables" | "control" | "functions";
 
-const CATEGORIES: { id: Category; label: string; icon: any }[] = [
+const CATEGORIES: { id: Category; label: string; icon: React.FC<any> }[] = [
   { id: "general", label: "General", icon: SvgCategoryGeneral },
   { id: "variables", label: "Variables", icon: SvgCategoryVariables },
   { id: "control", label: "Control", icon: SvgCategoryControl },

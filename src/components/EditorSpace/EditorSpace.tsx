@@ -1,3 +1,4 @@
+import type { DragEndEvent } from "@dnd-kit/core";
 import { useDndMonitor, useDroppable } from "@dnd-kit/core";
 import { useProgramContext } from "../../context/ProgramContext";
 import { useInteractionContext } from "../../context/InteractionContext";
@@ -6,6 +7,7 @@ import RenderNode from "../../logic/RenderNode";
 import React, { useEffect, useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";
+import type { ForNode, StatementNode, WhileNode } from "../../types/ast.ts";
 
 export type ActiveLineData = {
   startX: number;
@@ -26,11 +28,21 @@ interface EditorSpaceProps {
   panMain: { x: number; y: number };
 }
 
+type Line = {
+  key: string;
+  startX: number;
+  startY: number;
+  endX: number;
+  endY: number;
+  color?: string;
+};
+
 export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
   const { program, updateStatement } = useProgramContext();
   const { activeNode } = useInteractionContext();
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
+  const [lines, setLines] = useState<Line[]>([]);
   const [isPanning, setIsPanning] = useState(false);
   const [isAutoPanning, setIsAutoPanning] = useState(false);
   const [, setDragTick] = useState(0);
@@ -47,6 +59,7 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
       const node = program.body.find((n) => n.id === activeNode);
       if (node && containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsAutoPanning(true);
         setPanMain({
           x: width / 2 - node.x - 150,
@@ -58,6 +71,45 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
       }
     }
   }, [activeNode, program.body, setPanMain]);
+
+  // This effect recalculates line positions when the program or pan changes,
+  // avoiding DOM reads during render.
+  useEffect(() => {
+    const newLines: Line[] = [];
+    const renderLink = (
+      fromId: string,
+      toId: string | null,
+      color?: string,
+    ) => {
+      if (!toId) return;
+
+      const start = getConnectorPos(fromId, movingLayerRef);
+      const end = getConnectorPos(`input-${toId}`, movingLayerRef);
+
+      if (start && end) {
+        newLines.push({
+          key: `${fromId}-${toId}`,
+          startX: start.x,
+          startY: start.y,
+          endX: end.x,
+          endY: end.y,
+          color: color,
+        });
+      }
+    };
+
+    program.body.forEach((node: StatementNode) => {
+      renderLink(`out-${node.id}`, node.nextId);
+      if (node.type === "If") {
+        renderLink(`out-true-${node.id}`, node.trueId, "rgba(52,201,65,0.8)");
+        renderLink(`out-false-${node.id}`, node.falseId, "rgba(201,52,52,0.8)");
+      } else if (node.type === "For" || node.type === "While") {
+        renderLink(`out-true-${node.id}`, node.bodyId, "rgba(146,52,201,0.8)");
+      }
+    });
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLines(newLines);
+  }, [program, panMain]);
 
   function connectNodes(
     sourceId: string,
@@ -72,8 +124,8 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
           if (newNode.trueId === targetId) newNode.trueId = null;
           if (newNode.falseId === targetId) newNode.falseId = null;
         } else if (newNode.type === "For" || newNode.type === "While") {
-          if ((newNode as any).bodyId === targetId)
-            (newNode as any).bodyId = null;
+          if (newNode.bodyId === targetId)
+            (newNode as ForNode | WhileNode).bodyId = null;
         }
         return newNode;
       });
@@ -145,10 +197,8 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
         }
       }
     },
-    onDragEnd(event) {
+    onDragEnd(event: DragEndEvent) {
       const { active, over } = event;
-      console.log(JSON.stringify(active, null, 2));
-      console.log(JSON.stringify(over, null, 2));
 
       if (active.data.current?.type === "node") {
         setDragTick(0);
@@ -232,57 +282,16 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
             />
           )}
 
-          {program.body.map((node) => {
-            const renderLink = (
-              fromId: string,
-              toId: string | null,
-              color?: string,
-            ) => {
-              if (!toId) return null;
-
-              const start = getConnectorPos(fromId, movingLayerRef);
-              const end = getConnectorPos(`input-${toId}`, movingLayerRef);
-
-              if (!start || !end) return null;
-
-              return (
-                <ConnectionLine
-                  key={`${fromId}-${toId}`}
-                  startX={start.x}
-                  startY={start.y}
-                  endX={end.x}
-                  endY={end.y}
-                  color={color}
-                />
-              );
-            };
-
-            return (
-              <React.Fragment key={node.id}>
-                {renderLink(`out-${node.id}`, node.nextId)}
-                {node.type === "If" && (
-                  <>
-                    {renderLink(
-                      `out-true-${node.id}`,
-                      node.trueId,
-                      "rgba(52,201,65,0.8)",
-                    )}
-                    {renderLink(
-                      `out-false-${node.id}`,
-                      node.falseId,
-                      "rgba(201,52,52,0.8)",
-                    )}
-                  </>
-                )}
-                {(node.type === "For" || node.type === "While") &&
-                  renderLink(
-                    `out-true-${node.id}`,
-                    (node as any).bodyId,
-                    "rgba(146,52,201,0.8)",
-                  )}
-              </React.Fragment>
-            );
-          })}
+          {lines.map((line) => (
+            <ConnectionLine
+              key={line.key}
+              startX={line.startX}
+              startY={line.startY}
+              endX={line.endX}
+              endY={line.endY}
+              color={line.color}
+            />
+          ))}
         </svg>
 
         <div

@@ -15,6 +15,7 @@ export default function GetSize({ node }: { node: GetSizeNode }) {
   const [object, setObject] = useState<string>("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTarget(renderExpression(node.target));
     setObject(renderExpression(node.object));
   }, [node.target, node.object]);
@@ -39,7 +40,9 @@ export default function GetSize({ node }: { node: GetSizeNode }) {
                 };
               });
             }
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
       />
       <p>&larr;</p>
@@ -58,7 +61,9 @@ export default function GetSize({ node }: { node: GetSizeNode }) {
                 object: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         value={object}
         type="text"

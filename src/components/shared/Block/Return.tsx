@@ -16,6 +16,7 @@ export default function Return({ node }: { node: ReturnNode }) {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(node.argument ? renderExpression(node.argument) : "");
   }, [node.argument]);
 
@@ -34,7 +35,7 @@ export default function Return({ node }: { node: ReturnNode }) {
                 return { ...n, argument: parsed };
               });
             } catch {
-              // чтобы не было ошибки)
+              // ignore parsing errors
             }
           }}
           type="text"

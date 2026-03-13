@@ -24,7 +24,6 @@ export default function FunctionDeclaration({
         .filter(Boolean)
         .join(", ")
     ) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParamsText(currentParams);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

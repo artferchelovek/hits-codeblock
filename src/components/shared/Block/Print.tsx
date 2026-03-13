@@ -15,7 +15,9 @@ export default function Print({ node }: { node: PrintNode }) {
     renderExpression(node.expression),
   );
 
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(renderExpression(node.expression));
   }, [node.expression]);
 
@@ -39,7 +41,9 @@ export default function Print({ node }: { node: PrintNode }) {
                   expression: parsed,
                 };
               });
-            } catch {}
+            } catch {
+              // ignore parsing errors
+            }
           }}
           type="text"
           placeholder="a + 5"

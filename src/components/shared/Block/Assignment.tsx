@@ -13,7 +13,9 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
 
   const { updateStatement } = useProgramContext();
 
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(renderExpression(node.value));
     setTargetValue(renderExpression(node.target));
   }, [node.value, node.target]);
@@ -36,7 +38,9 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
                 target: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // value is not a valid expression yet
+          }
         }}
         value={targetValue}
         type="text"
@@ -63,7 +67,9 @@ export default function Assignment({ node }: { node: AssignmentNode }) {
                 value: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // value is not a valid expression yet
+          }
         }}
         value={inputValue}
         type="text"

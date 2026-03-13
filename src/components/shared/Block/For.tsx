@@ -14,13 +14,19 @@ export default function For({ node }: { node: ForNode }) {
   const [from, setFrom] = useState(renderExpression(node.from));
   const [to, setTo] = useState(renderExpression(node.to));
 
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIterator(renderExpression(node.iterator));
   }, [node.iterator]);
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFrom(renderExpression(node.from));
   }, [node.from]);
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTo(renderExpression(node.to));
   }, [node.to]);
 
@@ -42,7 +48,9 @@ export default function For({ node }: { node: ForNode }) {
                 from: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         type="text"
       />
@@ -63,7 +71,9 @@ export default function For({ node }: { node: ForNode }) {
                 to: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         type="text"
       />
@@ -84,7 +94,9 @@ export default function For({ node }: { node: ForNode }) {
                 iterator: parsed,
               };
             });
-          } catch {}
+          } catch {
+            // ignore parsing errors
+          }
         }}
         type="text"
       />

@@ -17,6 +17,7 @@ interface ProgramContextType {
 
 const ProgramContext = createContext<ProgramContextType | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useProgramContext = () => {
   const context = useContext(ProgramContext);
   if (!context) throw new Error("ProgramContext not found");

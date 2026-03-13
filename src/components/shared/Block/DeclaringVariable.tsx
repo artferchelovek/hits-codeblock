@@ -17,10 +17,12 @@ export default function DeclaringVariable({
 
   const [inputValue, setInputValue] = useState("");
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     const displayValue = node.size
       ? `${node.name}(${renderExpression(node.size)})`
       : node.name;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInputValue(displayValue);
   }, [node.name, node.size]);
 
