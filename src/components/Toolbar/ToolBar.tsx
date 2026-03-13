@@ -1,8 +1,11 @@
 import styles from "./ToolBar.module.css";
 import SvgBin from "../../svg/SvgBin.tsx";
 import { useProgramContext } from "../../context/ProgramContext.tsx";
+import { useInteractionContext } from "../../context/InteractionContext.tsx";
 import SvgDownload from "../../svg/SvgDownload.tsx";
 import SvgUpload from "../../svg/SvgUpload.tsx";
+import SvgSun from "../../svg/SvgSun.tsx";
+import SvgMoon from "../../svg/SvgMoon.tsx";
 import downloadProgram from "../../logic/downloadProgram.ts";
 import React, { useRef } from "react";
 import { uploadProgram } from "../../logic/uploadProgram.ts";
@@ -15,6 +18,8 @@ export default function ToolBar() {
     program,
     updateProgramName,
   } = useProgramContext();
+
+  const { theme, toggleTheme } = useInteractionContext();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +35,9 @@ export default function ToolBar() {
       alert(e);
     }
   };
+
+  const iconColor = "var(--md-sys-color-on-primary-container)";
+
   return (
     <div className={styles.toolBar}>
       <input
@@ -48,20 +56,32 @@ export default function ToolBar() {
           type="text"
         />
       </div>
+
+      <div
+        onClick={toggleTheme}
+        className={styles.elem}
+      >
+        {theme === "light" ? (
+          <SvgMoon fill={iconColor} />
+        ) : (
+          <SvgSun fill={iconColor} />
+        )}
+      </div>
+
       <div
         onClick={() => fileInputRef.current?.click()}
         className={styles.elem}
       >
-        <SvgUpload fill={"rgb(7 75 114)"} />
+        <SvgUpload fill={iconColor} />
       </div>
       <div
         onClick={() => downloadProgram(getProgram())}
         className={styles.elem}
       >
-        <SvgDownload fill={"rgb(7 75 114)"} />
+        <SvgDownload fill={iconColor} />
       </div>
       <div onClick={() => removeProgram()} className={styles.elem}>
-        <SvgBin fill={"rgb(7 75 114)"} />
+        <SvgBin fill={iconColor} />
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { useProgramContext } from "../../context/ProgramContext";
 import { useInteractionContext } from "../../context/InteractionContext";
 import styles from "./EditorSpace.module.css";
 import RenderNode from "../../logic/RenderNode";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ConnectionLine from "./ConnectionLine.tsx";
 import { getConnectorPos } from "../../logic/getConnectorPos.ts";
 import type { ForNode, StatementNode, WhileNode } from "../../types/ast.ts";
@@ -37,15 +37,19 @@ type Line = {
   color?: string;
 };
 
+const ZOOM_SPEED = 0.1;
+const MIN_ZOOM = 0.2;
+const MAX_ZOOM = 2;
+
 export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
   const { program, updateStatement } = useProgramContext();
-  const { activeNode } = useInteractionContext();
+  const { activeNode, zoom, setZoom } = useInteractionContext();
   const [activeConnection, setActiveConnection] =
     useState<ActiveLineData>(null);
   const [lines, setLines] = useState<Line[]>([]);
   const [isPanning, setIsPanning] = useState(false);
   const [isAutoPanning, setIsAutoPanning] = useState(false);
-  const [, setDragTick] = useState(0);
+  const [dragTick, setDragTick] = useState(0);
 
   const { setNodeRef } = useDroppable({ id: "root" });
 
@@ -62,18 +66,16 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsAutoPanning(true);
         setPanMain({
-          x: width / 2 - node.x - 150,
-          y: height / 2 - node.y - 37.5,
+          x: width / 2 - (node.x * zoom) - (150 * zoom),
+          y: height / 2 - (node.y * zoom) - (37.5 * zoom),
         });
 
         const timeout = setTimeout(() => setIsAutoPanning(false), 500);
         return () => clearTimeout(timeout);
       }
     }
-  }, [activeNode, program.body, setPanMain]);
+  }, [activeNode, program.body, setPanMain, zoom]);
 
-  // This effect recalculates line positions when the program or pan changes,
-  // avoiding DOM reads during render.
   useEffect(() => {
     const newLines: Line[] = [];
     const renderLink = (
@@ -89,10 +91,10 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
       if (start && end) {
         newLines.push({
           key: `${fromId}-${toId}`,
-          startX: start.x,
-          startY: start.y,
-          endX: end.x,
-          endY: end.y,
+          startX: start.x / zoom,
+          startY: start.y / zoom,
+          endX: end.x / zoom,
+          endY: end.y / zoom,
           color: color,
         });
       }
@@ -109,7 +111,7 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
     });
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLines(newLines);
-  }, [program, panMain]);
+  }, [program, panMain, zoom, dragTick]);
 
   function connectNodes(
     sourceId: string,
@@ -163,12 +165,63 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
     lastMouse.current = { x: e.clientX, y: e.clientY };
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if ((e.target as HTMLElement).id !== "editor") return;
+    setIsPanning(true);
+    setIsAutoPanning(false);
+    const touch = e.touches[0];
+    lastMouse.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isPanning) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - lastMouse.current.x;
+    const dy = touch.clientY - lastMouse.current.y;
+    setPanMain((prev) => ({ x: prev.x + dx, y: prev.y + dy }));
+    lastMouse.current = { x: touch.clientX, y: touch.clientY };
+  };
+
   const handleMouseUp = () => setIsPanning(false);
 
-  const handleWheel = (e: React.WheelEvent) => {
-    setIsAutoPanning(false);
-    setPanMain((prev) => ({ x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
-  };
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      setIsAutoPanning(false);
+      
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const zoomDirection = e.deltaY < 0 ? 1 : -1;
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + zoomDirection * ZOOM_SPEED));
+
+      if (newZoom !== zoom) {
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        const mouseXInCanvas = (mouseX - panMain.x) / zoom;
+        const mouseYInCanvas = (mouseY - panMain.y) / zoom;
+
+        const newPanX = mouseX - mouseXInCanvas * newZoom;
+        const newPanY = mouseY - mouseYInCanvas * newZoom;
+
+        setZoom(newZoom);
+        setPanMain({x: newPanX, y: newPanY});
+      }
+
+    } else {
+      setIsAutoPanning(false);
+      setPanMain((prev) => ({ x: prev.x - e.deltaX, y: prev.y - e.deltaY }));
+    }
+  }, [panMain, setPanMain, setZoom, zoom]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (el) {
+      el.addEventListener('wheel', handleWheel, { passive: false });
+      return () => el.removeEventListener('wheel', handleWheel);
+    }
+  }, [handleWheel]);
 
   useDndMonitor({
     onDragMove(event) {
@@ -189,10 +242,10 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
         const startPos = getConnectorPos(connectorId, movingLayerRef);
         if (startPos) {
           setActiveConnection({
-            startX: startPos.x,
-            startY: startPos.y,
-            toX: startPos.x + delta.x,
-            toY: startPos.y + delta.y,
+            startX: startPos.x / zoom,
+            startY: startPos.y / zoom,
+            toX: (startPos.x + delta.x) / zoom,
+            toY: (startPos.y + delta.y) / zoom,
           });
         }
       }
@@ -229,18 +282,21 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      onWheel={handleWheel}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleMouseUp}
       id="editor"
       style={{
         width: "100vw",
         height: "100vh",
         position: "relative",
         overflow: "hidden",
-        backgroundImage: "radial-gradient(#d7d7d7 1px, transparent 1px)",
-        backgroundSize: "20px 20px",
+        backgroundImage:
+          "radial-gradient(var(--md-sys-color-surface-variant) 1px, transparent 1px)",
+        backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
         backgroundPosition: `${panMain.x}px ${panMain.y}px`,
         transition: isAutoPanning
-          ? "background-position 0.4s cubic-bezier(0.2, 0, 0, 1)"
+          ? "background-position 0.4s cubic-bezier(0.2, 0, 0, 1), transform 0.4s cubic-bezier(0.2, 0, 0, 1)"
           : "none",
       }}
     >
@@ -250,7 +306,7 @@ export default function EditorSpace({ setPanMain, panMain }: EditorSpaceProps) {
           position: "absolute",
           top: 0,
           left: 0,
-          transform: `translate(${panMain.x}px, ${panMain.y}px)`,
+          transform: `translate(${panMain.x}px, ${panMain.y}px) scale(${zoom})`,
           width: 0,
           height: 0,
           pointerEvents: "none",

@@ -4,7 +4,7 @@
     position: fixed;
     top: 25px;
     right: 25px;
-    backdrop-filter: blur(1px);
+    z-index: 1000;
 
     .elem {
         display: flex;
@@ -28,6 +28,31 @@
             color: var(--md-sys-color-on-surface);
             box-shadow: var(--md-sys-elevation);
             padding: 10px;
+            border-radius: 10px;
+            border: none;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .toolBar {
+        top: auto;
+        bottom: 15px;
+        right: 15px;
+        left: 15px;
+        justify-content: space-between;
+        background: var(--md-sys-color-surface-container);
+        padding: 8px;
+        border-radius: 25px;
+        box-shadow: var(--md-sys-elevation);
+
+        .fileName {
+            display: none;
+        }
+
+        .elem {
+            padding: 8px;
+            border-radius: 15px;
         }
     }
 }
